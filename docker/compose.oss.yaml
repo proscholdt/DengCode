@@ -1,3 +1,80 @@
-# Stack open source local do DengCode. Serviços entram nas fases 3 e 5.
+# Stack open source local do DengCode (fase 3): Postgres + MinIO.
+#
+# SOMENTE PARA DESENVOLVIMENTO. As credenciais abaixo são públicas e fixas;
+# nunca use esta stack em produção nem exponha estas portas para a rede.
+#
+#   make up-oss    # sobe tudo em segundo plano
+#   make down-oss  # derruba (os volumes nomeados continuam)
+#
+# Portas e imagens podem ser trocadas por variáveis de ambiente (ver docker/README.md).
 name: dengcode-oss
-services: {}
+
+services:
+  postgres:
+    image: ${DENGCODE_POSTGRES_IMAGE:-postgres:16-alpine}
+    environment:
+      # credenciais de desenvolvimento (dev-only)
+      POSTGRES_DB: dengcode
+      POSTGRES_USER: dengcode
+      POSTGRES_PASSWORD: dengcode
+    ports:
+      - "${DENGCODE_POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dengcode -d dengcode"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
+  minio:
+    # A MinIO deixou de publicar imagens oficiais da edição comunitária;
+    # usamos o fork comunitário mantido pelo projeto Pigsty (mesmo binário/API).
+    image: ${DENGCODE_MINIO_IMAGE:-pgsty/minio:RELEASE.2026-08-04T00-00-00Z}
+    command: ["server", "/data", "--address", ":9000", "--console-address", ":9001"]
+    environment:
+      # credenciais de desenvolvimento (dev-only)
+      MINIO_ROOT_USER: dengcode
+      MINIO_ROOT_PASSWORD: dengcode123
+    ports:
+      - "${DENGCODE_MINIO_PORT:-9000}:9000"
+      - "${DENGCODE_MINIO_CONSOLE_PORT:-9001}:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+    restart: unless-stopped
+
+  # Execução única: cria o bucket de exemplo e publica os CSVs de
+  # examples/ecommerce/ (se existirem). Não falha se a pasta estiver vazia.
+  minio-init:
+    image: ${DENGCODE_MC_IMAGE:-pgsty/mc:RELEASE.2026-10-26T00-00-00Z}
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MC_HOST_local: http://dengcode:dengcode123@minio:9000
+    volumes:
+      # monta examples/ inteiro (sempre existe) para não criar pastas no host
+      - ../examples:/exemplos:ro
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        set -e
+        mc mb --ignore-existing local/dengcode-exemplo
+        if ls /exemplos/ecommerce/*.csv >/dev/null 2>&1; then
+          mc cp /exemplos/ecommerce/*.csv local/dengcode-exemplo/ecommerce/
+        else
+          echo "nenhum CSV em examples/ecommerce/: bucket criado vazio"
+        fi
+    restart: "no"
+
+volumes:
+  postgres-data:
+  minio-data:

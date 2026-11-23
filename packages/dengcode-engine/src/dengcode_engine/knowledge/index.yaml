@@ -37,3 +37,7 @@
   title: LGPD para engenharia de dados
   summary: Dados pessoais e sensíveis, minimização, pseudonimização x anonimização, retenção e limites do agente.
   path: fundamentos/lgpd.md
+- id: streaming
+  title: "Streaming: garantias, tempo e estado"
+  summary: Exactly-once na prática, watermarks, janelas, dados atrasados, checkpoint e diagnóstico de lag.
+  path: fundamentos/streaming.md

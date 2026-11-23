@@ -9,6 +9,7 @@ dependencies = ["dengcode-core", "openai>=3.58", "pyyaml>=6.0"]
 
 [project.entry-points."dengcode.adapters"]
 openai = "dengcode_adapter_llm_openai.llm:OpenAILLM"
+openai_embedding = "dengcode_adapter_llm_openai.embedding:OpenAIEmbedding"
 
 [build-system]
 requires = ["hatchling>=1.25"]

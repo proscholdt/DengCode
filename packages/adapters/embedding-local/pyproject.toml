@@ -1,0 +1,18 @@
+[project]
+name = "dengcode-adapter-embedding-local"
+version = "0.1.0"
+description = "DengCode — adapter de embeddings locais (fastembed/ONNX, sem torch)."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+dependencies = ["dengcode-core", "fastembed>=0.5"]
+
+[project.entry-points."dengcode.adapters"]
+local = "dengcode_adapter_embedding_local.embedding:LocalEmbedding"
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dengcode_adapter_embedding_local"]

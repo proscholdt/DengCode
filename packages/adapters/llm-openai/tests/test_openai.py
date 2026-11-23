@@ -7,8 +7,8 @@ from typing import Any
 import httpx2
 import openai
 import pytest
-from dengcode_adapter_llm_openai.llm import OpenAILLM, to_wire
 
+from dengcode_adapter_llm_openai.llm import OpenAILLM, to_wire
 from dengcode_core.llm.events import ToolCallEnd
 from dengcode_core.llm.messages import Message, ToolCallPart, ToolResultPart
 from dengcode_core.llm.retry import RetryPolicy

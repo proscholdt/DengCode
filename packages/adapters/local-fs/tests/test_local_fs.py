@@ -3,9 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from dengcode_adapter_local_fs.storage import LocalFsStorage
 
+from dengcode_adapter_local_fs.storage import LocalFsStorage
 from dengcode_core.errors import NotFoundError, UnsupportedOperation
+from dengcode_testkit.contracts.data import SAMPLE_CSV, StorageContract
 
 
 @pytest.fixture
@@ -47,3 +48,27 @@ async def test_sample_and_schema(storage: LocalFsStorage) -> None:
 async def test_write_disabled_by_default(storage: LocalFsStorage) -> None:
     with pytest.raises(UnsupportedOperation):
         await storage.write_bytes("x.txt", b"1")
+
+
+class TestLocalFsContract(StorageContract):
+    @pytest.fixture
+    def base_dir(self, tmp_path: Path) -> Path:
+        (tmp_path / "dados").mkdir()
+        (tmp_path / "dados" / "clientes.csv").write_bytes(SAMPLE_CSV)
+        return tmp_path
+
+    @pytest.fixture
+    def storage(self, base_dir: Path) -> LocalFsStorage:
+        return LocalFsStorage(base_dir)
+
+    @pytest.fixture
+    def base_uri(self) -> str:
+        return "dados"
+
+    @pytest.fixture
+    def sample_uri(self, base_dir: Path) -> str:
+        return (base_dir / "dados" / "clientes.csv").as_uri()
+
+    @pytest.fixture
+    def missing_uri(self) -> str:
+        return "dados/nao_existe.csv"

@@ -13,4 +13,4 @@ ignore = [
 ]
 
 [lint.isort]
-known-first-party = ["dengcode_core", "dengcode_engine", "dengcode_cli", "dengcode_testkit"]
+known-first-party = ["dengcode_*"]

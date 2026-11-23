@@ -10,6 +10,7 @@ root_packages =
     dengcode_adapter_llm_anthropic
     dengcode_adapter_llm_openai
     dengcode_adapter_llm_ollama
+    dengcode_adapter_duckdb
 include_external_packages = True
 
 [importlinter:contract:core-isolado]
@@ -52,6 +53,8 @@ source_modules =
     dengcode_adapter_llm_anthropic
     dengcode_adapter_llm_openai
     dengcode_adapter_llm_ollama
+    dengcode_adapter_duckdb
+    dengcode_adapter_duckdb
 forbidden_modules =
     dengcode_engine
     dengcode_cli
@@ -85,3 +88,4 @@ modules =
     dengcode_adapter_llm_anthropic
     dengcode_adapter_llm_openai
     dengcode_adapter_llm_ollama
+    dengcode_adapter_duckdb

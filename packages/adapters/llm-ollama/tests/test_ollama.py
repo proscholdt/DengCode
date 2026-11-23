@@ -6,8 +6,8 @@ from typing import Any
 
 import httpx2
 import pytest
-from dengcode_adapter_llm_ollama.llm import OllamaLLM, to_wire
 
+from dengcode_adapter_llm_ollama.llm import OllamaLLM, to_wire
 from dengcode_core.errors import ConfigError
 from dengcode_core.llm.messages import Message, ToolCallPart, ToolResultPart
 from dengcode_core.llm.retry import RetryPolicy

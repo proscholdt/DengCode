@@ -30,49 +30,49 @@ def project(tmp_path: Path) -> Path:
     return p
 
 
-def _rt(project: Path, home: Path, **kwargs: object):  # type: ignore[no-untyped-def]
+async def _rt(project: Path, home: Path, **kwargs: object):  # type: ignore[no-untyped-def]
     opts = RuntimeOptions(project_dir=project, stack="t", **kwargs)  # type: ignore[arg-type]
-    return build_runtime(opts, registry=_registry(), home=home)
+    return await build_runtime(opts, registry=_registry(), home=home)
 
 
-def test_parse_llm_override() -> None:
+async def test_parse_llm_override() -> None:
     assert parse_llm_override("anthropic") == ("anthropic", None)
     assert parse_llm_override("ollama:qwen2.5:7b") == ("ollama", "qwen2.5:7b")
 
 
 async def test_runtime_runs_a_turn_and_persists(project: Path, tmp_path: Path) -> None:
     _stack(project, "name: t\nllm: { provider: fake, script: [pronto] }\n")
-    rt = _rt(project, tmp_path / "home")
+    rt = await _rt(project, tmp_path / "home")
     assert rt.agent.models.main == "fake-main"  # padrão do adapter
     result = await rt.agent.run("oi")
     assert result.text == "pronto"
     assert rt.store.load(rt.agent.session.id).meta.system_prompt is not None
 
 
-def test_resume_keeps_frozen_system_prompt(project: Path, tmp_path: Path) -> None:
+async def test_resume_keeps_frozen_system_prompt(project: Path, tmp_path: Path) -> None:
     _stack(project, "name: t\nllm: { provider: fake }\n")
     home = tmp_path / "home"
-    rt = _rt(project, home)
+    rt = await _rt(project, home)
     rt.agent.session.meta.system_prompt = "prompt antigo"
     rt.store.save(rt.agent.session)
-    again = _rt(project, home, session_id=rt.agent.session.id)
+    again = await _rt(project, home, session_id=rt.agent.session.id)
     assert again.agent.system_prompt == "prompt antigo"
 
 
-def test_placeholder_model_is_config_error(project: Path, tmp_path: Path) -> None:
+async def test_placeholder_model_is_config_error(project: Path, tmp_path: Path) -> None:
     _stack(project, "name: t\nllm: { provider: fake, model: '<modelo>' }\n")
     with pytest.raises(ConfigError, match="não configurado"):
-        _rt(project, tmp_path / "home")
+        await _rt(project, tmp_path / "home")
 
 
-def test_llm_override_and_missing_adapter(project: Path, tmp_path: Path) -> None:
+async def test_llm_override_and_missing_adapter(project: Path, tmp_path: Path) -> None:
     _stack(project, "name: t\nllm: { provider: fake, model: a }\n")
-    assert _rt(project, tmp_path / "home", llm="fake:b").agent.models.main == "b"
+    assert (await _rt(project, tmp_path / "home", llm="fake:b")).agent.models.main == "b"
     with pytest.raises(ConfigError, match="não está instalado"):
-        _rt(project, tmp_path / "home", llm="inexistente")
+        await _rt(project, tmp_path / "home", llm="inexistente")
 
 
-def test_read_only_env_and_prod_auto(project: Path, tmp_path: Path) -> None:
+async def test_read_only_env_and_prod_auto(project: Path, tmp_path: Path) -> None:
     body = (
         "name: t\n"
         "llm: { provider: fake }\n"
@@ -83,11 +83,11 @@ def test_read_only_env_and_prod_auto(project: Path, tmp_path: Path) -> None:
     )
     _stack(project, body)
     home = tmp_path / "home"
-    assert _rt(project, home, env="dev").agent.policy.mode is PermissionMode.AUTO
-    assert _rt(project, home, env="prod").agent.policy.mode is PermissionMode.ASK
-    assert _rt(project, home, env="audit").agent.policy.mode is PermissionMode.READ_ONLY
+    assert (await _rt(project, home, env="dev")).agent.policy.mode is PermissionMode.AUTO
+    assert (await _rt(project, home, env="prod")).agent.policy.mode is PermissionMode.ASK
+    assert (await _rt(project, home, env="audit")).agent.policy.mode is PermissionMode.READ_ONLY
     with pytest.raises(ConfigError, match="ambiente"):
-        _rt(project, home, env="inexistente")
+        await _rt(project, home, env="inexistente")
 
 
 async def test_fallback_is_wired_and_emits_event(project: Path, tmp_path: Path) -> None:
@@ -100,7 +100,7 @@ async def test_fallback_is_wired_and_emits_event(project: Path, tmp_path: Path) 
         "  fallback: { provider: fake, name: reserva, model: m2, script: [do reserva] }\n"
     )
     _stack(project, body)
-    rt = _rt(project, tmp_path / "home")
+    rt = await _rt(project, tmp_path / "home")
     llm = rt.agent.llm
     assert isinstance(llm, FallbackLLM)
     primary = llm._primary

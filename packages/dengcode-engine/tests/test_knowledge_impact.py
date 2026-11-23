@@ -113,7 +113,7 @@ def test_folder_entries_and_precedence(tmp_path: Path, project: Path) -> None:
 
 
 async def test_runtime_wires_transform_impact_and_knowledge(project: Path, tmp_path: Path) -> None:
-    rt = build_runtime(
+    rt = await build_runtime(
         RuntimeOptions(project_dir=project, stack="t"), registry=_registry(), home=tmp_path / "home"
     )
     names = set(rt.agent.tools.names())
@@ -162,7 +162,7 @@ async def test_transform_run_asks_and_snapshot_is_free_in_dev(
         asked.append(req.name)
         return ApprovalAnswer(True)
 
-    rt = build_runtime(
+    rt = await build_runtime(
         RuntimeOptions(project_dir=project, stack="t"),
         registry=_registry(),
         approver=approver,

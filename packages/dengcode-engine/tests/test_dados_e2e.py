@@ -60,12 +60,12 @@ def project(tmp_path: Path) -> Path:
     return proj
 
 
-def _runtime(
+async def _runtime(
     project: Path, home: Path, script: list[FakeTurn], approver: Approvals, env: str = "dev"
 ) -> tuple[Runtime, FakeLLM]:
     fake = RegisteredAdapter("fake", None, FakeLLMAdapter.info, FakeLLMAdapter)
     registry = AdapterRegistry([*AdapterRegistry.discover().all(), fake])
-    rt = build_runtime(
+    rt = await build_runtime(
         RuntimeOptions(project_dir=project, stack="t", env=env),
         registry=registry,
         approver=approver,
@@ -107,7 +107,7 @@ async def test_pii_never_reaches_the_llm(project: Path, tmp_path: Path) -> None:
         ),
         text("Vi os clientes."),
     ]
-    rt, llm = _runtime(project, tmp_path / "home", script, Approvals())
+    rt, llm = await _runtime(project, tmp_path / "home", script, Approvals())
     result = await rt.agent.run("explore os clientes")
     assert result.reason == "end"
     results = _results(llm)
@@ -128,7 +128,7 @@ async def test_silver_model_requires_approval_and_works(project: Path, tmp_path:
         text("silver_pedidos criada, sem duplicatas"),
     ]
     approvals = Approvals(False, True)
-    rt, llm = _runtime(project, tmp_path / "home", script, approvals)
+    rt, llm = await _runtime(project, tmp_path / "home", script, approvals)
     await rt.agent.run("crie um modelo silver de pedidos deduplicando e tipando")
     assert len(approvals.asked) == 2  # só as escritas pediram aprovação
     card = approvals.asked[0]
@@ -152,7 +152,7 @@ async def test_no_write_without_approval(project: Path, tmp_path: Path) -> None:
         call("query_run", sql="SELECT * FROM x"),
         text("ok"),
     ]
-    rt, llm = _runtime(project, tmp_path / "home", script, Approvals())  # recusa tudo
+    rt, llm = await _runtime(project, tmp_path / "home", script, Approvals())  # recusa tudo
     await rt.agent.run("crie x")
     _, select = _results(llm)
     assert select.is_error  # a tabela não existe: nada foi escrito
@@ -162,7 +162,7 @@ async def test_no_write_without_approval(project: Path, tmp_path: Path) -> None:
 async def test_drop_in_prod_is_denied_without_asking(project: Path, tmp_path: Path) -> None:
     script = [call("query_run", sql="DROP TABLE IF EXISTS silver_pedidos"), text("bloqueado")]
     approvals = Approvals(True)
-    rt, llm = _runtime(project, tmp_path / "home", script, approvals, env="prod")
+    rt, llm = await _runtime(project, tmp_path / "home", script, approvals, env="prod")
     await rt.agent.run("apague a tabela")
     assert approvals.asked == []
     [res] = _results(llm)
@@ -172,7 +172,7 @@ async def test_drop_in_prod_is_denied_without_asking(project: Path, tmp_path: Pa
 
 async def test_exploratory_read_gets_limit_and_is_audited(project: Path, tmp_path: Path) -> None:
     script = [call("query_run", sql="SELECT * FROM read_csv('dados/itens_pedido.csv')"), text("ok")]
-    rt, llm = _runtime(project, tmp_path / "home", script, Approvals())
+    rt, llm = await _runtime(project, tmp_path / "home", script, Approvals())
     await rt.agent.run("veja os itens")
     [res] = _results(llm)
     assert "LIMIT 1000 injetado" in res.content
@@ -195,7 +195,7 @@ async def test_catalog_tools(project: Path, tmp_path: Path) -> None:
         ),
         text("ok"),
     ]
-    rt, llm = _runtime(project, tmp_path / "home", script, Approvals(True))
+    rt, llm = await _runtime(project, tmp_path / "home", script, Approvals(True))
     await rt.agent.run("descreva")
     _, listed, described, stats = _results(llm)
     assert "clientes" in listed.content

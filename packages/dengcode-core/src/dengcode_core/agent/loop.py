@@ -50,7 +50,7 @@ from dengcode_core.llm.port import LLMPort
 from dengcode_core.policy.permission import Decision, PermissionPolicy
 from dengcode_core.privacy.pii import PiiMasker
 from dengcode_core.session import Session, SessionStore
-from dengcode_core.tools.base import Tool, ToolArgsError, ToolContext, ToolResult
+from dengcode_core.tools.base import APPROVED_KEY, Tool, ToolArgsError, ToolContext, ToolResult
 from dengcode_core.tools.registry import ToolRegistry
 
 log = logging.getLogger(__name__)
@@ -350,6 +350,8 @@ class Agent:
             if answer.remember:
                 self.policy.grant(request)
 
+        # ferramentas que não rodam em paralelo podem saber se o usuário aprovou esta chamada
+        self.ctx.extras[APPROVED_KEY] = verdict.decision is Decision.ASK
         await self.bus.publish(
             ToolCallStarted(
                 call_id=part.id, name=part.name, arguments=part.arguments, risk=request.risk.value

@@ -56,7 +56,7 @@ async def test_add_column_and_propagate(project: Path, tmp_path: Path) -> None:
         asked.append(req)
         return ApprovalAnswer(True)
 
-    rt = build_runtime(
+    rt = await build_runtime(
         RuntimeOptions(project_dir=project, stack="t"),
         registry=_registry(),
         approver=approve,

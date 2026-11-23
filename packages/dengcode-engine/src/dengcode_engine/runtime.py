@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +24,7 @@ from dengcode_core.policy.permission import (
     PermissionMode,
     PermissionPolicy,
 )
+from dengcode_core.ports.memory import Scope
 from dengcode_core.ports.models import AdapterContext, AdapterInfo, PortKind
 from dengcode_core.privacy.pii import PiiMasker
 from dengcode_core.prompts.render import render_system_prompt
@@ -32,13 +33,16 @@ from dengcode_core.sql.cost import CostLimit
 from dengcode_core.tools.base import Tool, ToolContext
 from dengcode_core.tools.builtin import builtin_tools
 from dengcode_core.tools.data import DataServices, data_tools
+from dengcode_core.tools.ops import ops_tools
 from dengcode_core.tools.registry import ToolRegistry
 from dengcode_core.tools.transform import transform_tools
 from dengcode_engine.config.credentials import resolve_value
 from dengcode_engine.config.loader import StackLoader
 from dengcode_engine.config.schema import PLACEHOLDER_MARK, AdapterRef, LLMConfig, StackConfig
 from dengcode_engine.knowledge_loader import load_knowledge
+from dengcode_engine.memory import workspace_summary
 from dengcode_engine.paths import dengcode_home, sessions_dir, workspace_dir
+from dengcode_engine.project import load_project
 from dengcode_engine.registry import AdapterRegistry
 
 log = logging.getLogger(__name__)
@@ -261,7 +265,58 @@ def build_policy(stack: StackConfig, env: str, mode: str | None) -> PermissionPo
     )
 
 
-def build_runtime(
+INVESTIGATION_FLOW = """Ao investigar uma falha de pipeline ou de dados:
+1. Antes de tudo, `memory_search` com o nome da pipeline/tabela e o sintoma (tipo
+   incident) — se já aconteceu, cite o incidente e confira se a causa se repete.
+2. `pipeline_runs` → `pipeline_run_detail` da execução com falha → `pipeline_task_logs`
+   da tarefa que falhou. Use as ferramentas de dados para confirmar a causa.
+3. Explique a causa com evidências e proponha a correção.
+4. Ao final, `memory_propose` do tipo incident com: sintoma, causa e solução (sem
+   valores de linha nem dados pessoais) e as entidades envolvidas."""
+
+
+@dataclass
+class OpsAdapters:
+    orchestrator: Any = None
+    stream: Any = None
+    stream_compute: Any = None
+    embedding: Any = None
+    memory: Any = None
+
+
+def build_ops(stack: StackConfig, registry: AdapterRegistry, ctx: AdapterContext) -> OpsAdapters:
+    """Orquestração, streaming, embeddings e memória. Memória sem adapter instalado = sem
+    memória (aviso), para o motor seguir funcionando."""
+    ops = OpsAdapters()
+    if stack.orchestrator:
+        ops.orchestrator = create_adapter(registry, PortKind.ORCHESTRATOR, stack.orchestrator, ctx)
+    if stack.streaming:
+        ops.stream = create_adapter(registry, PortKind.STREAM, stack.streaming, ctx)
+    if stack.stream_compute:
+        ops.stream_compute = create_adapter(
+            registry, PortKind.STREAM_COMPUTE, stack.stream_compute[0], ctx
+        )
+    if stack.embedding and registry.has(PortKind.EMBEDDING, stack.embedding.provider):
+        cfg = {"model": stack.embedding.model, **(stack.embedding.model_extra or {})}
+        ops.embedding = registry.create(
+            PortKind.EMBEDDING,
+            stack.embedding.provider,
+            resolve_value({k: v for k, v in cfg.items() if v}),
+            ctx,
+        )
+    elif stack.embedding:
+        log.warning(
+            "embedding '%s' não instalado: memória só com busca textual", stack.embedding.provider
+        )
+    if registry.has(PortKind.MEMORY_STORE, stack.memory.adapter):
+        mctx = replace(ctx, peers={**ctx.peers, "embedding": ops.embedding})
+        ops.memory = create_adapter(registry, PortKind.MEMORY_STORE, stack.memory, mctx)
+    else:
+        log.warning("memória '%s' não instalada: sessão sem memória", stack.memory.adapter)
+    return ops
+
+
+async def build_runtime(
     opts: RuntimeOptions,
     *,
     registry: AdapterRegistry | None = None,
@@ -281,8 +336,14 @@ def build_runtime(
     )
     llm, roles = build_llm(stack, registry, ctx, override=opts.llm, bus=bus)
     policy = build_policy(stack, opts.env, opts.mode)
+    project_notes, project_protected = load_project(project_dir)
+    if project_protected:
+        policy.protected_tables = tuple({*policy.protected_tables, *project_protected})
     masker = PiiMasker()
     data = build_data_services(stack, registry, ctx, env=opts.env, home=home, masker=masker)
+    scope = Scope(workspace=opts.workspace, project=str(project_dir), env=opts.env)
+    ops = build_ops(stack, registry, ctx)
+    data.memory, data.scope = ops.memory, scope
 
     store = SessionStore(sessions_dir(opts.workspace, home))
     if opts.session_id:
@@ -309,6 +370,13 @@ def build_runtime(
             *builtin_tools(),
             *data_tools(data),
             *transform_tools(data, transform, default_target=opts.env, knowledge=knowledge),
+            *ops_tools(
+                orchestrator=ops.orchestrator,
+                stream=ops.stream,
+                stream_compute=ops.stream_compute,
+                memory=ops.memory,
+                scope=scope,
+            ),
             *(extra_tools or []),
         ]
     )
@@ -318,16 +386,31 @@ def build_runtime(
         env=opts.env,
         checkpoints=CheckpointStore.for_session(project_dir, session.id),
     )
-    prompt = session.meta.system_prompt or render_system_prompt(
-        workspace=opts.workspace,
-        project_dir=str(project_dir),
-        stack=stack.name,
-        env=opts.env,
-        mode=policy.mode.value,
-        sections=prompt_sections(
+    prompt = session.meta.system_prompt
+    if prompt is None:
+        sections: list[tuple[str, str]] = []
+        if project_notes:
+            sections.append(("Regras do projeto (.dengcode/PROJETO.md)", project_notes))
+        if ops.memory is not None:
+            sections.append(
+                (
+                    f"Memória do workspace `{opts.workspace}`",
+                    await workspace_summary(ops.memory, scope),
+                )
+            )
+        if ops.orchestrator is not None:
+            sections.append(("Investigação de falhas", INVESTIGATION_FLOW))
+        sections += prompt_sections(
             knowledge, has_transform=transform is not None, has_data=bool(data.engines)
-        ),
-    )
+        )
+        prompt = render_system_prompt(
+            workspace=opts.workspace,
+            project_dir=str(project_dir),
+            stack=stack.name,
+            env=opts.env,
+            mode=policy.mode.value,
+            sections=sections,
+        )
     session.meta.system_prompt = prompt
     agent = Agent(
         llm=llm,
@@ -350,5 +433,11 @@ def build_runtime(
         registry=registry,
         store=store,
         data=data,
-        adapters={"llm": llm},
+        adapters={
+            "llm": llm,
+            "transform": transform,
+            "orchestrator": ops.orchestrator,
+            "stream": ops.stream,
+            "memory": ops.memory,
+        },
     )

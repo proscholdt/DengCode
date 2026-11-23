@@ -16,8 +16,10 @@ from pydantic import BaseModel, Field
 from dengcode_core.audit import AuditLog, AuditRecord
 from dengcode_core.data.results import ResultStore, render_for_llm
 from dengcode_core.errors import ConfigError, DengCodeError, UnsupportedOperation
+from dengcode_core.memory_records import table_record
 from dengcode_core.ports.catalog import CatalogPort
-from dengcode_core.ports.models import TableRef
+from dengcode_core.ports.memory import MemoryStorePort, Scope
+from dengcode_core.ports.models import TableInfo, TableRef
 from dengcode_core.ports.query_engine import QueryEnginePort
 from dengcode_core.ports.storage import StoragePort
 from dengcode_core.privacy.pii import PII_TAGS, PiiMasker, is_pii_column
@@ -48,6 +50,8 @@ class DataServices:
     max_rows: int = 10_000
     timeout_s: int = 300
     explore_limit: int = 1_000
+    memory: MemoryStorePort | None = None
+    scope: Scope | None = None
 
     def engine(self, name: str | None) -> tuple[str, QueryEnginePort]:
         if not self.engines:
@@ -284,11 +288,27 @@ class CatalogDescribe(Tool[TableArgs]):
     Args = TableArgs
     parallel_safe: ClassVar[bool] = True
 
-    def __init__(self, catalog: CatalogPort) -> None:
+    def __init__(self, catalog: CatalogPort, services: DataServices | None = None) -> None:
         self.catalog = catalog
+        self.s = services
+
+    async def _remember(self, info: TableInfo) -> str | None:
+        """Memória é pista: compara o schema_hash guardado com o ao vivo."""
+        if self.s is None or self.s.memory is None or self.s.scope is None:
+            return None
+        new = table_record(info, self.s.scope, self.catalog.name)
+        old = await self.s.memory.get(self.s.scope, new.id)
+        note = None
+        if old is not None and old.schema_hash != info.schema_hash:
+            stale = old.model_copy(update={"confidence": "stale"})
+            await self.s.memory.upsert(stale)
+            note = "aviso: o schema mudou desde o registro na memória; vale o que está acima"
+        await self.s.memory.upsert(new)
+        return note
 
     async def run(self, args: TableArgs, ctx: ToolContext) -> ToolResult:
         info = await self.catalog.describe(_ref(args.table))
+        note = await self._remember(info)
         lines = [
             f"tabela: {info.ref.qualified()}",
             f"linhas: {info.row_count if info.row_count is not None else 'desconhecido'}",
@@ -305,6 +325,8 @@ class CatalogDescribe(Tool[TableArgs]):
             tags = f" tags={sorted(c.tags)}" if c.tags else ""
             desc = f" — {c.description}" if c.description else ""
             lines.append(f"- {c.name}: {c.data_type} [{', '.join(flags)}]{tags}{desc}")
+        if note:
+            lines.append(note)
         return ToolResult("\n".join(lines))
 
 
@@ -433,7 +455,7 @@ def data_tools(services: DataServices) -> list[Tool[Any]]:
     if services.catalog is not None:
         tools += [
             CatalogListTables(services.catalog),
-            CatalogDescribe(services.catalog),
+            CatalogDescribe(services.catalog, services),
             CatalogColumnStats(services.catalog, services.masker),
         ]
     if services.storage is not None:

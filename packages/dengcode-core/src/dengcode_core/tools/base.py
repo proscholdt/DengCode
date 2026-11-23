@@ -76,6 +76,9 @@ class ToolContext:
         return path == root or path.is_relative_to(root)
 
 
+APPROVED_KEY = "approved_by_user"
+"""``ToolContext.extras``: o loop marca True quando o usuário aprovou a chamada atual."""
+
 INVALID_JSON_KEY = "__invalid_json__"
 """Chave que os adapters usam quando o provedor devolve argumentos que não são JSON."""
 

@@ -8,6 +8,7 @@ import logging
 import sys
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 import typer
 import yaml
@@ -19,11 +20,19 @@ from dengcode_cli import __version__
 from dengcode_cli.ui import AutoApprover, ChatRenderer, InteractiveApprover
 from dengcode_core.agent.loop import Approver, deny_all
 from dengcode_core.checkpoints import latest_session_store
-from dengcode_core.errors import DengCodeError
+from dengcode_core.errors import ConfigError, DengCodeError
 from dengcode_core.ports.models import PortKind
 from dengcode_engine.config.credentials import load_dotenv
 from dengcode_engine.config.loader import StackLoader
-from dengcode_engine.paths import dengcode_home, sessions_dir, workspace_dir
+from dengcode_engine.paths import (
+    current_workspace,
+    dengcode_home,
+    list_workspaces,
+    sessions_dir,
+    set_current_workspace,
+    workspace_dir,
+)
+from dengcode_engine.project import init_project
 from dengcode_engine.registry import AdapterRegistry
 from dengcode_engine.runtime import Runtime, RuntimeOptions, build_runtime
 
@@ -50,16 +59,26 @@ adapters_app = typer.Typer(help="Adapters instalados.", no_args_is_help=True)
 stack_app = typer.Typer(help="Stacks (ligação porta → adapter).", no_args_is_help=True)
 sessions_app = typer.Typer(help="Sessões salvas.", no_args_is_help=True)
 audit_app = typer.Typer(help="Auditoria de queries (append-only).", no_args_is_help=True)
+workspace_app = typer.Typer(
+    help="Workspaces (isolam memória, sessões e auditoria).", no_args_is_help=True
+)
+catalog_app = typer.Typer(help="Catálogo de dados.", no_args_is_help=True)
+memory_app = typer.Typer(help="Memória do workspace.", no_args_is_help=True)
 app.add_typer(adapters_app, name="adapters")
 app.add_typer(stack_app, name="stack")
 app.add_typer(sessions_app, name="sessions")
 app.add_typer(audit_app, name="audit")
+app.add_typer(workspace_app, name="workspace")
+app.add_typer(catalog_app, name="catalog")
+app.add_typer(memory_app, name="memory")
 
 StackOpt = typer.Option("local", "--stack", "-s", help="Stack a usar.")
 EnvOpt = typer.Option("dev", "--env", "-e", help="Ambiente da stack (dev, prod...).")
 ModeOpt = typer.Option(None, "--mode", "-m", help="Modo de permissão: ask, auto, read_only.")
 LlmOpt = typer.Option(None, "--llm", help="Troca o LLM: provedor ou provedor:modelo.")
-WsOpt = typer.Option("default", "--workspace", "-w", help="Workspace (isola memória e sessões).")
+WsOpt = typer.Option(
+    None, "--workspace", "-w", help="Workspace (padrão: o ativo; isola memória e sessões)."
+)
 DirOpt = typer.Option(Path("."), "--project", "-p", help="Diretório do projeto.")
 
 
@@ -101,7 +120,7 @@ def _options(
     env: str,
     mode: str | None,
     llm: str | None,
-    workspace: str,
+    workspace: str | None,
     resume: str | None = None,
 ) -> RuntimeOptions:
     project = project.resolve()
@@ -112,7 +131,7 @@ def _options(
         env=env,
         mode=mode,
         llm=llm,
-        workspace=workspace,
+        workspace=workspace or current_workspace(),
         session_id=resume,
     )
 
@@ -202,7 +221,7 @@ def stack_validate(name: str, project: Path = DirOpt) -> None:
 
 @stack_app.command("doctor")
 def stack_doctor(
-    name: str, env: str = EnvOpt, workspace: str = WsOpt, project: Path = DirOpt
+    name: str, env: str = EnvOpt, workspace: str | None = WsOpt, project: Path = DirOpt
 ) -> None:
     """Conecta em cada porta da stack e executa uma operação inofensiva."""
     from dengcode_engine.doctor import run_doctor
@@ -218,7 +237,7 @@ def stack_doctor(
             stack,
             AdapterRegistry.discover(),
             project_dir=project,
-            workspace=workspace,
+            workspace=workspace or current_workspace(),
             env=env,
             home=dengcode_home(),
         )
@@ -246,9 +265,10 @@ def _parse_since(text: str) -> datetime:
 def audit_list(
     since: str = typer.Option("7d", "--since", help="Janela: 30m, 12h, 7d."),
     limit: int = typer.Option(50, "--limit", help="Máximo de registros."),
-    workspace: str = WsOpt,
+    workspace: str | None = WsOpt,
 ) -> None:
     """Lista as queries auditadas do workspace."""
+    workspace = workspace or current_workspace()
     from dengcode_core.audit import AuditLog
 
     path = workspace_dir(workspace) / "audit.db"
@@ -271,8 +291,9 @@ def audit_list(
 
 # ----------------------------------------------------------------------- sessões
 @sessions_app.command("list")
-def sessions_list(workspace: str = WsOpt) -> None:
+def sessions_list(workspace: str | None = WsOpt) -> None:
     """Lista as sessões salvas do workspace."""
+    workspace = workspace or current_workspace()
     from dengcode_core.session import SessionStore
 
     table = Table(title=f"Sessões · {workspace}")
@@ -367,21 +388,23 @@ def chat(
     env: str = EnvOpt,
     mode: str | None = ModeOpt,
     llm: str | None = LlmOpt,
-    workspace: str = WsOpt,
+    workspace: str | None = WsOpt,
     project: Path = DirOpt,
     resume: str | None = typer.Option(None, "--resume", help="Retoma uma sessão pelo id."),
 ) -> None:
     """Conversa interativa com o agente."""
     renderer = ChatRenderer(console)
-    try:
-        rt = build_runtime(
-            _options(project, stack, env, mode, llm, workspace, resume),
-            approver=InteractiveApprover(console),
-        )
-    except DengCodeError as exc:
-        raise _fail(exc) from exc
-    rt.bus.subscribe(renderer)
-    asyncio.run(_chat_loop(rt, renderer))
+    opts = _options(project, stack, env, mode, llm, workspace, resume)
+
+    async def main() -> None:
+        try:
+            rt = await build_runtime(opts, approver=InteractiveApprover(console))
+        except DengCodeError as exc:
+            raise _fail(exc) from exc
+        rt.bus.subscribe(renderer)
+        await _chat_loop(rt, renderer)
+
+    asyncio.run(main())
 
 
 @app.command("run")
@@ -395,39 +418,179 @@ def run(
     env: str = EnvOpt,
     mode: str | None = ModeOpt,
     llm: str | None = LlmOpt,
-    workspace: str = WsOpt,
+    workspace: str | None = WsOpt,
     project: Path = DirOpt,
 ) -> None:
     """Executa uma tarefa sem interação (headless)."""
     approver: Approver = AutoApprover() if yes else deny_all
-    try:
-        rt = build_runtime(_options(project, stack, env, mode, llm, workspace), approver=approver)
-    except DengCodeError as exc:
-        if as_json:
-            print(json.dumps({"type": "error", "message": str(exc)}, ensure_ascii=False))
-            raise typer.Exit(code=1) from exc
-        raise _fail(exc) from exc
-    if as_json:
+    opts = _options(project, stack, env, mode, llm, workspace)
 
-        def emit(event: BaseModel) -> None:
-            sys.stdout.write(event.model_dump_json() + "\n")
-            sys.stdout.flush()
+    def emit(event: BaseModel) -> None:
+        sys.stdout.write(event.model_dump_json() + "\n")
+        sys.stdout.flush()
 
-        rt.bus.subscribe(emit)
-    else:
-        rt.bus.subscribe(ChatRenderer(console))
-    result = asyncio.run(rt.agent.run(task))
+    async def main() -> tuple[str, int, str, float | None]:
+        try:
+            rt = await build_runtime(opts, approver=approver)
+        except DengCodeError as exc:
+            if as_json:
+                print(json.dumps({"type": "error", "message": str(exc)}, ensure_ascii=False))
+                raise typer.Exit(code=1) from exc
+            raise _fail(exc) from exc
+        rt.bus.subscribe(emit if as_json else ChatRenderer(console))
+        result = await rt.agent.run(task)
+        return result.reason, result.steps, rt.agent.session.id, rt.agent.total_cost_usd
+
+    reason, steps, session_id, cost = asyncio.run(main())
     if as_json:
         final = {
             "type": "result",
-            "reason": result.reason,
-            "steps": result.steps,
-            "session_id": rt.agent.session.id,
-            "cost_usd": rt.agent.total_cost_usd,
+            "reason": reason,
+            "steps": steps,
+            "session_id": session_id,
+            "cost_usd": cost,
         }
         print(json.dumps(final, ensure_ascii=False))
-    if result.reason == "error":
+    if reason == "error":
         raise typer.Exit(code=2)
+
+
+# ----------------------------------------------------------------------- workspaces
+@workspace_app.command("list")
+def workspace_list() -> None:
+    """Lista os workspaces (o ativo aparece marcado)."""
+    active = current_workspace()
+    names = sorted({*list_workspaces(), active})
+    for name in names:
+        console.print(f"{'*' if name == active else ' '} {name}")
+
+
+@workspace_app.command("new")
+def workspace_new(name: str, use: bool = typer.Option(True, help="Já ativar o novo.")) -> None:
+    """Cria um workspace (memória, sessões e auditoria isoladas)."""
+    try:
+        path = workspace_dir(name)
+    except DengCodeError as exc:
+        raise _fail(exc) from exc
+    path.mkdir(parents=True, exist_ok=True)
+    if use:
+        set_current_workspace(name)
+    console.print(f"[green]✓ workspace {name} criado[/green]" + (" e ativo" if use else ""))
+
+
+@workspace_app.command("use")
+def workspace_use(name: str) -> None:
+    """Ativa um workspace."""
+    try:
+        workspace_dir(name).mkdir(parents=True, exist_ok=True)
+        set_current_workspace(name)
+    except DengCodeError as exc:
+        raise _fail(exc) from exc
+    console.print(f"[green]✓ workspace ativo: {name}[/green]")
+
+
+# ----------------------------------------------------------------------- projeto
+@app.command("init")
+def init(project: Path = DirOpt) -> None:
+    """Cria .dengcode/PROJETO.md com convenções, camadas e tabelas protegidas."""
+    path, created = init_project(project.resolve())
+    if created:
+        console.print(f"[green]✓ criado {path}[/green] — edite e versione junto com o código")
+    else:
+        console.print(f"já existe: {path}")
+
+
+# ----------------------------------------------------------------------- catálogo e memória
+@catalog_app.command("sync")
+def catalog_sync(
+    stack: str = StackOpt, env: str = EnvOpt, workspace: str | None = WsOpt, project: Path = DirOpt
+) -> None:
+    """Grava os metadados do catálogo (tabelas, colunas, estatísticas) na memória."""
+    from dengcode_engine.memory import sync_catalog
+
+    opts = _options(project, stack, env, None, None, workspace)
+
+    async def main() -> str:
+        rt = await build_runtime(opts)
+        catalog, memory, scope = rt.data.catalog, rt.data.memory, rt.data.scope
+        if catalog is None or memory is None or scope is None:
+            raise _fail(ConfigError("a stack precisa de catálogo e memória para sincronizar"))
+        report = await sync_catalog(catalog, memory, scope, source=catalog.name)
+        return (
+            f"{report.tables} tabela(s), {report.changed} com schema alterado, "
+            f"{report.stats} com estatísticas, {report.errors} erro(s)"
+        )
+
+    try:
+        summary = asyncio.run(main())
+    except DengCodeError as exc:
+        raise _fail(exc) from exc
+    console.print(f"[green]✓ catálogo sincronizado:[/green] {summary}")
+
+
+async def _memory(opts: RuntimeOptions) -> tuple[Any, Any]:
+    rt = await build_runtime(opts)
+    if rt.data.memory is None or rt.data.scope is None:
+        raise _fail(ConfigError("a stack não tem memória configurada"))
+    return rt.data.memory, rt.data.scope
+
+
+@memory_app.command("list")
+def memory_list(
+    proposed: bool = typer.Option(False, "--proposed", help="Só as propostas pendentes."),
+    stack: str = StackOpt,
+    workspace: str | None = WsOpt,
+    project: Path = DirOpt,
+) -> None:
+    """Lista os registros de memória do workspace."""
+    opts = _options(project, stack, "dev", None, None, workspace)
+
+    async def main() -> list[Any]:
+        memory, scope = await _memory(opts)
+        recs = await memory.list(scope, limit=200)
+        return [r for r in recs if not proposed or r.confidence == "proposed"]
+
+    table = Table(title=f"Memória · {opts.workspace}")
+    for col in ("id", "tipo", "confiança", "título", "atualizado"):
+        table.add_column(col, overflow="fold")
+    for r in asyncio.run(main()):
+        table.add_row(r.id, r.kind.value, r.confidence, r.title, r.updated_at.strftime("%Y-%m-%d"))
+    console.print(table)
+
+
+@memory_app.command("confirm")
+def memory_confirm(
+    record_id: str, stack: str = StackOpt, workspace: str | None = WsOpt, project: Path = DirOpt
+) -> None:
+    """Confirma um registro proposto pelo agente (vira verified)."""
+    opts = _options(project, stack, "dev", None, None, workspace)
+
+    async def main() -> bool:
+        memory, scope = await _memory(opts)
+        rec = await memory.get(scope, record_id)
+        if rec is None:
+            return False
+        await memory.upsert(rec.model_copy(update={"confidence": "verified"}))
+        return True
+
+    if not asyncio.run(main()):
+        raise _fail(ConfigError(f"registro não encontrado: {record_id}"))
+    console.print(f"[green]✓ {record_id} confirmado[/green]")
+
+
+@memory_app.command("forget")
+def memory_forget(
+    record_id: str, stack: str = StackOpt, workspace: str | None = WsOpt, project: Path = DirOpt
+) -> None:
+    """Apaga um registro da memória do workspace."""
+    opts = _options(project, stack, "dev", None, None, workspace)
+
+    async def main() -> None:
+        memory, scope = await _memory(opts)
+        await memory.delete(scope, record_id)
+
+    asyncio.run(main())
+    console.print(f"[green]✓ {record_id} esquecido[/green]")
 
 
 if __name__ == "__main__":  # pragma: no cover

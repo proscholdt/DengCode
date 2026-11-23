@@ -108,19 +108,32 @@ async def run_doctor(
         checks.append(await _probe("catalog", catalog_ref.adapter, catalog_probe))
 
     optional: list[tuple[str, PortKind, AdapterRef | None, Callable[[Any], Awaitable[str]]]] = [
-        ("orchestrator", PortKind.ORCHESTRATOR, stack.orchestrator,
-         lambda a: _count(a.list_pipelines(), "pipeline(s)")),
-        ("stream", PortKind.STREAM, stack.streaming,
-         lambda a: _count(a.list_topics(), "tópico(s)")),
-        ("transform", PortKind.TRANSFORM, stack.transform,
-         lambda a: _count(a.list_models(), "modelo(s)")),
+        (
+            "orchestrator",
+            PortKind.ORCHESTRATOR,
+            stack.orchestrator,
+            lambda a: _count(a.list_pipelines(), "pipeline(s)"),
+        ),
+        (
+            "stream",
+            PortKind.STREAM,
+            stack.streaming,
+            lambda a: _count(a.list_topics(), "tópico(s)"),
+        ),
+        (
+            "transform",
+            PortKind.TRANSFORM,
+            stack.transform,
+            lambda a: _count(a.list_models(), "modelo(s)"),
+        ),
     ]
     for port_name, port, ref, op in optional:
         if ref is None:
             continue
 
-        async def probe(ref: AdapterRef = ref, port: PortKind = port,
-                        op: Callable[[Any], Awaitable[str]] = op) -> str:
+        async def probe(
+            ref: AdapterRef = ref, port: PortKind = port, op: Callable[[Any], Awaitable[str]] = op
+        ) -> str:
             return await op(create_adapter(registry, port, ref, pctx))
 
         checks.append(await _probe(port_name, ref.adapter, probe))

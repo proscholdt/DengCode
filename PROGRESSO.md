@@ -5,7 +5,7 @@
 
 ## Estado atual
 
-- Fase atual: **5 — Memória, orquestração e streaming**
+- Fase atual: **6 — ACP + extensão do VS Code**
 - Última atualização: 2026-11-23
 
 ## Fases
@@ -14,7 +14,7 @@
 - [x] Fase 2 — Core + LLM
 - [x] Fase 3 — Dados locais
 - [x] Fase 4 — Verificação e transformação
-- [ ] Fase 5 — Memória, orquestração e streaming (preset open source completo)
+- [x] Fase 5 — Memória, orquestração e streaming (preset open source completo)
 - [ ] Fase 6 — ACP + extensão do VS Code
 - [ ] Fase 7 — Presets de nuvem (Azure → AWS → Google)
 - [ ] Fase 8 — Distribuição e lançamento
@@ -28,7 +28,7 @@
       `dengcode.adapters`, extensões ACP `_dengcode/*`)
 - [ ] Executável único: PyInstaller ou Nuitka?
 - [x] TUI rica (Textual) já na fase 2 ou CLI simples até a fase 6? → **CLI simples (Rich) até a fase 6**
-- [ ] Orquestrador open source padrão: Airflow ou Dagster?
+- [x] Orquestrador open source padrão: Airflow ou Dagster? → **Airflow** (API REST v1/v2)
 
 ## Decisões tomadas na implementação
 
@@ -61,6 +61,14 @@
 | 4 | `data_snapshot` grava em `dengcode_tmp_<sessão>`; escrita só nesse schema é liberada em dev sem perguntar (nunca em prod/read_only). |
 | 4 | Conhecimento embutido em um só lugar (`dengcode_engine/knowledge/`, como os presets); `knowledge/README.md` na raiz aponta para lá. Pacotes por ferramenta ficam em cada adapter (`AdapterInfo.knowledge_pack`). |
 | 4 | Exemplo `examples/ecommerce/` é um projeto DengCode (stack `ecommerce` em `.dengcode/stacks/`) com projeto dbt bronze→silver→gold. |
+| 5 | `MemoryStorePort` ganhou `list(scope, kinds, limit)` (além da especificação) para o resumo do workspace no prompt e para `dengcode memory list`. |
+| 5 | Memória SQLite: uma conexão por store com lock, WAL; FTS5 (`unicode61 remove_diacritics`) + `sqlite-vec` (partição por workspace) + grafo; RRF k=60. Sem extensão de vetor ou sem embedder: só FTS5 com um aviso. Validador rejeita PII e corpo com cara de linhas de dados. |
+| 5 | Embeddings locais com `fastembed` (ADR 0007), modelo multilíngue `paraphrase-multilingual-MiniLM-L12-v2`; também Ollama e OpenAI. Preset `local` fica sem embedding (só FTS); `opensource` usa `local`. |
+| 5 | `memory_propose` vira `verified` quando o usuário aprova a chamada (o loop marca `approved_by_user` no `ToolContext`); sem aprovação (modo auto) fica `proposed` e se confirma com `dengcode memory confirm`. |
+| 5 | Catálogo na memória só com metadados: colunas, linhas, formato e, nas estatísticas, frações de nulos e distintos — sem min/max. `catalog_describe` compara o `schema_hash` com a memória e marca `stale`. |
+| 5 | `build_runtime` passou a ser assíncrono (o resumo da memória vai no prompt congelado da sessão). |
+| 5 | Airflow 2 e 3 pela API REST (auto-detecção); `run_id` = `"<dag_id>/<dag_run_id>"`. Imagem `apache/airflow:slim-3.3.2` standalone. Kafka com `aiokafka`; `sample` não confirma offsets e nunca cria tópico. Trino pelo protocolo HTTP (`httpx2`) para cancelar de verdade; Iceberg REST direto pela especificação (sem `pyiceberg`). |
+| 5 | Compose: arquivo principal (Postgres + MinIO) inclui `docker/oss/{trino,airflow,kafka}.yaml`; portas Trino 8080, Airflow 8081, Iceberg 8181, Kafka 9092. |
 | 1 | Ruff `N818` desligado: nomes de erro seguem a especificação (`CostLimitExceeded`, `UnsupportedOperation`). |
 | 1 | Adapter `local-fs` já implementa a `StoragePort` completa (CSV/Parquet/JSON via PyArrow); escrita desligada por padrão. |
 
@@ -68,6 +76,7 @@
 
 | Data | Fase/tarefa | O que foi feito | Pendências |
 | --- | --- | --- | --- |
+| 2026-11-23 | Fase 5 | Workspaces (`workspace new/list/use`), `init` (PROJETO.md com tabelas protegidas na política), MemoryStore SQLite + embeddings (local/Ollama/OpenAI), `catalog sync` e detecção de `stale`, ferramentas `memory_*`, `pipeline_*`, `stream_*`; OrchestratorPort + Airflow; StreamPort + Kafka; StreamComputePort + fake; Trino (QueryEngine + Catalog) e Iceberg REST; compose completo e preset `opensource`; pacotes de conhecimento airflow, kafka, trino, iceberg. Critérios: `test_fase5_e2e.py` (investigação de `carga_pedidos` com logs mascarados, incidente gravado e citado na 2ª sessão; dois workspaces sem vazamento; sync + stale); contratos passam para todos os adapters open source (testes de integração com Docker); `stack doctor opensource` 9/9 verde com `make up-oss`. | Fundamentos de streaming (exactly-once, watermarks, janelas, checkpointing, late data) ainda só dentro do pacote kafka; vale um arquivo próprio em `fundamentos/`. |
 | 2026-11-23 | Fase 4 | TransformPort + adapter `dbt_core` (contrato `TransformContract`, 11 testes com dbt real); lineage de colunas (testado em 6 dialetos) e `impact_analysis`; `DataDiff` (linhas a mais, duplicadas, nulos novos, alteradas); ferramentas `transform_*`, `data_snapshot`, `data_diff`, `knowledge_read`; fluxo "mudar modelo" no prompt; 9 fundamentos + pacotes duckdb/postgres/dbt; projeto dbt de exemplo. Critério: teste de ponta a ponta com dbt e DuckDB reais (`test_fase4_e2e.py`) — impacto lista o gold, edições aprovadas, `run`/`test` verdes, data diff mostra `canal_venda` nova, 300 → 300 linhas no silver e a mudança de grão no gold; o teste de unicidade antigo do gold falhou até ser ajustado ao novo grão (a verificação pegou o problema). | Rodar o cenário ao vivo com um LLM forte (o 7B local se perde em SQL do DuckDB). |
 | 2026-11-23 | Fase 3 | Portas Storage/QueryEngine/Catalog + contratos e fakes; adapters duckdb, postgres (testcontainers), minio (testcontainers), local-fs completo; SqlGuard (82 casos em 6 dialetos), CostGuard, ResultStore, PiiMasker, AuditLog; ferramentas `query_run`, `query_explain`, `catalog_*`, `storage_*`; `stack validate`/`doctor`, `audit list`; card de aprovação de SQL; compose (Postgres + MinIO + bucket de exemplo); dados sintéticos em `examples/ecommerce/`. Critérios: testes de ponta a ponta (FakeLLM + DuckDB real) provam que nenhum e-mail/CPF chega ao LLM, que DDL/DML só roda com aprovação e que `DROP` em prod é negado sem perguntar; contratos passam para os 4 adapters (42 testes de integração com Docker); `stack doctor opensource` verde com `make up-oss`. | Medir RAM do compose (estimativa ~1 GB). |
 | 2026-11-23 | Fase 2 | Formato canônico, LLMPort, retry/backoff/jitter + Retry-After, fallback de provedor; ferramentas de arquivo e shell; PermissionPolicy; checkpoints e `undo`; EventBus; ContextManager (truncamento, marcadores de conteúdo não confiável, compactação com o modelo `fast`); sessões JSONL; loop do agente com leituras em paralelo, orçamento e cancelamento; FakeLLM e `LLMContract`; adapters Anthropic, OpenAI (inclui Azure via `variant: azure` e `base_url`) e Ollama; carregamento de stacks (`extends`, `env://`, `.env`); CLI `chat`, `run --json`, `undo`, `sessions list`, `stack list/show/validate`. Verificado ao vivo com Ollama `qwen2.5:7b`: leu o projeto de exemplo, editou com aprovação, rodou `pytest` (exit 0); `dengcode undo` restaurou; recusa no chat interativo manteve o arquivo. | Anthropic e OpenAI testados só com respostas gravadas (sem chave de API nesta máquina): rodar o critério ao vivo quando houver chave. |

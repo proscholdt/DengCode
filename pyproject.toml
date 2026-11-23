@@ -1,7 +1,7 @@
 # Raiz do workspace uv (virtual): não é um pacote, só agrupa os membros.
 [tool.uv.workspace]
 members = ["packages/*", "packages/adapters/*"]
-exclude = ["packages/adapters"]
+exclude = ["packages/adapters", "packages/adapters/dbt"]  # dbt: temporário até o merge do adapter
 
 [tool.uv.sources]
 dengcode-core = { workspace = true }

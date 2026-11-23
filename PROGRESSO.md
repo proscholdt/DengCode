@@ -5,7 +5,7 @@
 
 ## Estado atual
 
-- Fase atual: **4 — Verificação e transformação**
+- Fase atual: **5 — Memória, orquestração e streaming**
 - Última atualização: 2026-11-23
 
 ## Fases
@@ -13,7 +13,7 @@
 - [x] Fase 1 — Fundação
 - [x] Fase 2 — Core + LLM
 - [x] Fase 3 — Dados locais
-- [ ] Fase 4 — Verificação e transformação
+- [x] Fase 4 — Verificação e transformação
 - [ ] Fase 5 — Memória, orquestração e streaming (preset open source completo)
 - [ ] Fase 6 — ACP + extensão do VS Code
 - [ ] Fase 7 — Presets de nuvem (Azure → AWS → Google)
@@ -55,6 +55,12 @@
 | 3 | MinIO via `obstore` (Rust, async, wheels nos 3 SOs). As imagens oficiais `minio/minio` e `minio/mc` não estão mais disponíveis para pull; o compose usa `pgsty/minio` / `pgsty/mc` (troca por `DENGCODE_MINIO_IMAGE`/`DENGCODE_MC_IMAGE`). |
 | 3 | Postgres via psycopg 3 assíncrono, uma conexão por operação. No Windows o psycopg não aceita o `ProactorEventLoop` (necessário ao `shell_run`): o adapter roda cada operação num `SelectorEventLoop` em thread auxiliar (`portable.py`), sem mudar a política global. |
 | 3 | Preset `opensource` reduzido ao que existe na fase 3 (MinIO + DuckDB + Postgres); cresce nas fases 4 e 5. Preset `local` ganhou DuckDB em arquivo (`.dengcode/local.duckdb`) + catálogo DuckDB. |
+| 4 | dbt como subprocesso (ADR 0008), não `dbtRunner`; DuckDB em arquivo abre conexão por operação para o dbt poder escrever no mesmo arquivo. |
+| 4 | Lineage de colunas via `sqlglot.lineage` sobre o SQL compilado; `SELECT *` entre modelos expandido com `qualify` usando as colunas de saída já conhecidas; nomes normalizados para `schema.tabela`. |
+| 4 | Data diff gera SQL em DuckDB e transpila para o dialeto do motor; toda instrução gerada passa pelo SqlGuard (precisa ser READ). Colunas PII sem min/max/top valores. |
+| 4 | `data_snapshot` grava em `dengcode_tmp_<sessão>`; escrita só nesse schema é liberada em dev sem perguntar (nunca em prod/read_only). |
+| 4 | Conhecimento embutido em um só lugar (`dengcode_engine/knowledge/`, como os presets); `knowledge/README.md` na raiz aponta para lá. Pacotes por ferramenta ficam em cada adapter (`AdapterInfo.knowledge_pack`). |
+| 4 | Exemplo `examples/ecommerce/` é um projeto DengCode (stack `ecommerce` em `.dengcode/stacks/`) com projeto dbt bronze→silver→gold. |
 | 1 | Ruff `N818` desligado: nomes de erro seguem a especificação (`CostLimitExceeded`, `UnsupportedOperation`). |
 | 1 | Adapter `local-fs` já implementa a `StoragePort` completa (CSV/Parquet/JSON via PyArrow); escrita desligada por padrão. |
 
@@ -62,6 +68,7 @@
 
 | Data | Fase/tarefa | O que foi feito | Pendências |
 | --- | --- | --- | --- |
+| 2026-11-23 | Fase 4 | TransformPort + adapter `dbt_core` (contrato `TransformContract`, 11 testes com dbt real); lineage de colunas (testado em 6 dialetos) e `impact_analysis`; `DataDiff` (linhas a mais, duplicadas, nulos novos, alteradas); ferramentas `transform_*`, `data_snapshot`, `data_diff`, `knowledge_read`; fluxo "mudar modelo" no prompt; 9 fundamentos + pacotes duckdb/postgres/dbt; projeto dbt de exemplo. Critério: teste de ponta a ponta com dbt e DuckDB reais (`test_fase4_e2e.py`) — impacto lista o gold, edições aprovadas, `run`/`test` verdes, data diff mostra `canal_venda` nova, 300 → 300 linhas no silver e a mudança de grão no gold; o teste de unicidade antigo do gold falhou até ser ajustado ao novo grão (a verificação pegou o problema). | Rodar o cenário ao vivo com um LLM forte (o 7B local se perde em SQL do DuckDB). |
 | 2026-11-23 | Fase 3 | Portas Storage/QueryEngine/Catalog + contratos e fakes; adapters duckdb, postgres (testcontainers), minio (testcontainers), local-fs completo; SqlGuard (82 casos em 6 dialetos), CostGuard, ResultStore, PiiMasker, AuditLog; ferramentas `query_run`, `query_explain`, `catalog_*`, `storage_*`; `stack validate`/`doctor`, `audit list`; card de aprovação de SQL; compose (Postgres + MinIO + bucket de exemplo); dados sintéticos em `examples/ecommerce/`. Critérios: testes de ponta a ponta (FakeLLM + DuckDB real) provam que nenhum e-mail/CPF chega ao LLM, que DDL/DML só roda com aprovação e que `DROP` em prod é negado sem perguntar; contratos passam para os 4 adapters (42 testes de integração com Docker); `stack doctor opensource` verde com `make up-oss`. | Medir RAM do compose (estimativa ~1 GB). |
 | 2026-11-23 | Fase 2 | Formato canônico, LLMPort, retry/backoff/jitter + Retry-After, fallback de provedor; ferramentas de arquivo e shell; PermissionPolicy; checkpoints e `undo`; EventBus; ContextManager (truncamento, marcadores de conteúdo não confiável, compactação com o modelo `fast`); sessões JSONL; loop do agente com leituras em paralelo, orçamento e cancelamento; FakeLLM e `LLMContract`; adapters Anthropic, OpenAI (inclui Azure via `variant: azure` e `base_url`) e Ollama; carregamento de stacks (`extends`, `env://`, `.env`); CLI `chat`, `run --json`, `undo`, `sessions list`, `stack list/show/validate`. Verificado ao vivo com Ollama `qwen2.5:7b`: leu o projeto de exemplo, editou com aprovação, rodou `pytest` (exit 0); `dengcode undo` restaurou; recusa no chat interativo manteve o arquivo. | Anthropic e OpenAI testados só com respostas gravadas (sem chave de API nesta máquina): rodar o critério ao vivo quando houver chave. |
 | 2026-11-23 | Fase 1 | Workspace uv (core, engine, cli, testkit, local-fs), ruff, pyright strict no core, import-linter, erros, registro por entry points, CLI `--version`/`adapters list`, Makefile portátil, Dockerfile multi-stage, compose vazio, CI 3 SO × 2 Pythons, higiene (gitignore, editorconfig, gitattributes, pre-commit). `make lint` e `make test` verdes; `import boto3` no core quebra o lint (ruff e import-linter). | CI verde a confirmar no GitHub após o push. |

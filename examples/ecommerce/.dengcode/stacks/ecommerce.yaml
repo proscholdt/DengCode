@@ -1,0 +1,14 @@
+# Stack do exemplo de e-commerce: o mesmo DuckDB que o dbt materializa.
+# Rode a partir de examples/ecommerce:  dengcode chat --stack ecommerce
+name: ecommerce
+extends: local
+description: Exemplo e-commerce — DuckDB do projeto dbt + dbt-core + Ollama
+
+compute:
+  # o banco é do dbt; caminhos relativos (../pedidos.csv nas views bronze) partem da pasta dbt
+  - { adapter: duckdb, database: "dbt/ecommerce.duckdb", file_search_path: "dbt" }
+catalog: { adapter: duckdb }
+transform: { adapter: dbt_core, project_dir: "dbt", target: dev }
+
+policy:
+  shell_allowlist: ["git status", "git diff", "dbt ls", "dbt compile", "dbt test"]

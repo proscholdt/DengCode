@@ -85,6 +85,9 @@ class DuckDBQueryEngine:
             database = str((base / database).resolve())
             Path(database).parent.mkdir(parents=True, exist_ok=True)
         search = ctx.project_dir.resolve() if ctx.project_dir is not None else None
+        if cfg.get("file_search_path"):  # ex.: a pasta do projeto dbt, de onde partem os caminhos
+            custom = Path(str(cfg["file_search_path"])).expanduser()
+            search = (custom if custom.is_absolute() else (search or Path.cwd()) / custom).resolve()
         try:
             return cls(
                 database=database, search_path=search, read_only=bool(cfg.get("read_only", False))

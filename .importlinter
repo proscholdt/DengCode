@@ -16,6 +16,9 @@ root_packages =
     dengcode_adapter_minio
     dengcode_adapter_dbt
     dengcode_adapter_kafka
+    dengcode_adapter_memory_sqlite
+    dengcode_adapter_embedding_local
+    dengcode_adapter_airflow
 include_external_packages = True
 
 [importlinter:contract:core-isolado]
@@ -36,6 +39,9 @@ forbidden_modules =
     dengcode_adapter_minio
     dengcode_adapter_dbt
     dengcode_adapter_kafka
+    dengcode_adapter_memory_sqlite
+    dengcode_adapter_embedding_local
+    dengcode_adapter_airflow
 
 [importlinter:contract:core-sem-sdks]
 name = core não importa SDKs de nuvem, de LLM nem engines de dados
@@ -57,6 +63,8 @@ forbidden_modules =
     duckdb
     psycopg
     aiokafka
+    fastembed
+    sqlite_vec
 
 [importlinter:contract:adapters-isolados]
 name = adapters não importam engine nem CLI
@@ -71,6 +79,9 @@ source_modules =
     dengcode_adapter_minio
     dengcode_adapter_dbt
     dengcode_adapter_kafka
+    dengcode_adapter_memory_sqlite
+    dengcode_adapter_embedding_local
+    dengcode_adapter_airflow
 forbidden_modules =
     dengcode_engine
     dengcode_cli
@@ -100,6 +111,9 @@ forbidden_modules =
     dengcode_adapter_minio
     dengcode_adapter_dbt
     dengcode_adapter_kafka
+    dengcode_adapter_memory_sqlite
+    dengcode_adapter_embedding_local
+    dengcode_adapter_airflow
 
 [importlinter:contract:adapters-independentes]
 name = adapters não importam uns aos outros
@@ -114,3 +128,6 @@ modules =
     dengcode_adapter_minio
     dengcode_adapter_dbt
     dengcode_adapter_kafka
+    dengcode_adapter_memory_sqlite
+    dengcode_adapter_embedding_local
+    dengcode_adapter_airflow

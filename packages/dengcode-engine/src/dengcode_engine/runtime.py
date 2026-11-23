@@ -16,6 +16,7 @@ from dengcode_core.checkpoints import CheckpointStore
 from dengcode_core.data.results import ResultStore
 from dengcode_core.errors import ConfigError
 from dengcode_core.events import EventBus, ProviderFallback
+from dengcode_core.knowledge import KnowledgeBase
 from dengcode_core.llm.fallback import FallbackLLM
 from dengcode_core.llm.port import LLMPort
 from dengcode_core.policy.permission import (
@@ -23,7 +24,7 @@ from dengcode_core.policy.permission import (
     PermissionMode,
     PermissionPolicy,
 )
-from dengcode_core.ports.models import AdapterContext, PortKind
+from dengcode_core.ports.models import AdapterContext, AdapterInfo, PortKind
 from dengcode_core.privacy.pii import PiiMasker
 from dengcode_core.prompts.render import render_system_prompt
 from dengcode_core.session import Session, SessionMeta, SessionStore
@@ -32,9 +33,11 @@ from dengcode_core.tools.base import Tool, ToolContext
 from dengcode_core.tools.builtin import builtin_tools
 from dengcode_core.tools.data import DataServices, data_tools
 from dengcode_core.tools.registry import ToolRegistry
+from dengcode_core.tools.transform import transform_tools
 from dengcode_engine.config.credentials import resolve_value
 from dengcode_engine.config.loader import StackLoader
 from dengcode_engine.config.schema import PLACEHOLDER_MARK, AdapterRef, LLMConfig, StackConfig
+from dengcode_engine.knowledge_loader import load_knowledge
 from dengcode_engine.paths import dengcode_home, sessions_dir, workspace_dir
 from dengcode_engine.registry import AdapterRegistry
 
@@ -193,6 +196,53 @@ def build_data_services(
     )
 
 
+MODEL_CHANGE_FLOW = """Ao mudar um modelo de transformação, siga esta ordem:
+1. Localize o modelo (`transform_list_models`) e leia o arquivo.
+2. Rode `impact_analysis` no modelo/coluna e liste o que é afetado downstream.
+3. Faça `data_snapshot` das relações que vão mudar (o modelo e os afetados).
+4. Edite os arquivos (cada edição mostra o diff e pede aprovação).
+5. `transform_compile` para conferir o SQL; depois `transform_run` em dev com o
+   seletor `modelo+` (o modelo e tudo abaixo dele).
+6. `transform_test` com o mesmo seletor.
+7. `data_diff` entre cada cópia do snapshot e a relação nova (use a chave do modelo).
+8. Relatório final: impacto, arquivos alterados, resultado dos testes e o que o
+   data diff mostrou (e se é o esperado)."""
+
+
+def prompt_sections(
+    knowledge: KnowledgeBase, *, has_transform: bool, has_data: bool
+) -> list[tuple[str, str]]:
+    sections: list[tuple[str, str]] = []
+    if has_transform:
+        sections.append(("Fluxo para mudar um modelo", MODEL_CHANGE_FLOW))
+    elif has_data:
+        sections.append(
+            (
+                "Verificação com dados",
+                "Antes de mudar uma tabela, faça `data_snapshot`; depois compare com `data_diff`.",
+            )
+        )
+    if len(knowledge):
+        sections.append(
+            ("Conhecimento disponível (leia com `knowledge_read`)", knowledge.index_text())
+        )
+    return sections
+
+
+def _stack_infos(stack: StackConfig, registry: AdapterRegistry) -> list[AdapterInfo]:
+    refs: list[tuple[PortKind, str]] = [(PortKind.QUERY_ENGINE, c.adapter) for c in stack.compute]
+    for port, ref in (
+        (PortKind.STORAGE, stack.storage),
+        (PortKind.CATALOG, stack.catalog),
+        (PortKind.TRANSFORM, stack.transform),
+        (PortKind.ORCHESTRATOR, stack.orchestrator),
+        (PortKind.STREAM, stack.streaming),
+    ):
+        if ref is not None:
+            refs.append((port, ref.adapter))
+    return [registry.get(port, name).info for port, name in refs if registry.has(port, name)]
+
+
 def build_policy(stack: StackConfig, env: str, mode: str | None) -> PermissionPolicy:
     env_cfg = stack.environment(env)
     chosen = PermissionMode(mode or env_cfg.permission_mode)
@@ -246,7 +296,22 @@ def build_runtime(
                 env=opts.env,
             )
         )
-    tools = ToolRegistry([*builtin_tools(), *data_tools(data), *(extra_tools or [])])
+    transform = (
+        create_adapter(registry, PortKind.TRANSFORM, stack.transform, ctx)
+        if stack.transform
+        else None
+    )
+    knowledge = load_knowledge(
+        adapters=_stack_infos(stack, registry), home=home, project_dir=project_dir
+    )
+    tools = ToolRegistry(
+        [
+            *builtin_tools(),
+            *data_tools(data),
+            *transform_tools(data, transform, default_target=opts.env, knowledge=knowledge),
+            *(extra_tools or []),
+        ]
+    )
     tool_ctx = ToolContext(
         workspace_root=project_dir,
         session_id=session.id,
@@ -259,6 +324,9 @@ def build_runtime(
         stack=stack.name,
         env=opts.env,
         mode=policy.mode.value,
+        sections=prompt_sections(
+            knowledge, has_transform=transform is not None, has_data=bool(data.engines)
+        ),
     )
     session.meta.system_prompt = prompt
     agent = Agent(

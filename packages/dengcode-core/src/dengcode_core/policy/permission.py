@@ -82,6 +82,15 @@ _DESTRUCTIVE = [
 _CHAIN = re.compile(r"&&|\|\||;|\||`|\$\(|>|<|\n")
 
 
+SCRATCH_SCHEMA_PREFIX = "dengcode_tmp_"
+
+
+def _is_scratch(table: str) -> bool:
+    """Tabela no schema temporário da sessão (``dengcode_tmp_<sessão>.x``)."""
+    parts = table.lower().split(".")
+    return len(parts) >= 2 and parts[-2].startswith(SCRATCH_SCHEMA_PREFIX)
+
+
 def is_destructive(command: str) -> bool:
     return any(p.search(command) for p in _DESTRUCTIVE)
 
@@ -196,6 +205,8 @@ class PermissionPolicy:
             return PolicyDecision(Decision.DENY, f"{kind.upper()} bloqueado em prod")
         if dangerous:
             return self._ask(request, f"{kind.upper()} em dev", *dangerous)
+        if written and kind in ("ddl", "dml") and all(_is_scratch(t) for t in written):
+            return PolicyDecision(Decision.ALLOW, "área temporária da sessão (dev)")
         if cost_reason:
             return self._ask(request, f"{kind.upper()} com custo: {cost_reason}")
         if kind == "dml" and self.mode is PermissionMode.AUTO:

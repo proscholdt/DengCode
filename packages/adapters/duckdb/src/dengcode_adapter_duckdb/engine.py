@@ -7,8 +7,10 @@ timeout interrompe a conexão (``interrupt``).
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import time
 import uuid
+from collections.abc import Iterator
 from pathlib import Path
 from typing import Any, ClassVar
 
@@ -45,6 +47,10 @@ def map_error(exc: duckdb.Error) -> Exception:
 
 
 class DuckDBQueryEngine:
+    """Banco em memória: conexão persistente. Banco em arquivo: uma conexão por
+    operação, para outro processo (ex.: dbt) poder escrever no mesmo arquivo
+    entre as consultas — o DuckDB só permite um processo escritor por arquivo."""
+
     info: ClassVar[AdapterInfo] = AdapterInfo(
         name="duckdb",
         port=PortKind.QUERY_ENGINE,
@@ -53,10 +59,23 @@ class DuckDBQueryEngine:
     )
     name = "duckdb"
 
-    def __init__(self, conn: duckdb.DuckDBPyConnection, *, database: str = ":memory:") -> None:
-        self.conn = conn
+    def __init__(
+        self,
+        conn: duckdb.DuckDBPyConnection | None = None,
+        *,
+        database: str = ":memory:",
+        search_path: Path | None = None,
+        read_only: bool = False,
+    ) -> None:
+        if conn is None and database == ":memory:":
+            conn = duckdb.connect(":memory:")
+        self._conn = conn
         self.database = database
+        self._search_path = search_path
+        self._read_only = read_only
         self._running: dict[str, duckdb.DuckDBPyConnection] = {}
+        if conn is not None:
+            self._configure(conn)
 
     @classmethod
     def from_config(cls, cfg: dict[str, Any], ctx: AdapterContext) -> DuckDBQueryEngine:
@@ -65,15 +84,35 @@ class DuckDBQueryEngine:
             base = ctx.project_dir or Path.cwd()
             database = str((base / database).resolve())
             Path(database).parent.mkdir(parents=True, exist_ok=True)
+        search = ctx.project_dir.resolve() if ctx.project_dir is not None else None
         try:
-            conn = duckdb.connect(database, read_only=bool(cfg.get("read_only", False)))
-            if ctx.project_dir is not None:
-                # caminhos relativos em read_csv('dados/x.csv') partem do projeto, não do cwd
-                search = str(ctx.project_dir.resolve()).replace("'", "''")
-                conn.execute(f"SET GLOBAL file_search_path = '{search}'")
+            return cls(
+                database=database, search_path=search, read_only=bool(cfg.get("read_only", False))
+            )
         except duckdb.Error as exc:
             raise map_error(exc) from exc
-        return cls(conn, database=database)
+
+    def _configure(self, conn: duckdb.DuckDBPyConnection) -> None:
+        if self._search_path is not None:
+            # caminhos relativos em read_csv('dados/x.csv') partem do projeto, não do cwd
+            search = str(self._search_path).replace("'", "''")
+            conn.execute(f"SET GLOBAL file_search_path = '{search}'")
+
+    @contextlib.contextmanager
+    def session(self) -> Iterator[duckdb.DuckDBPyConnection]:
+        """Cursor/conexão para uma operação (fechado ao final)."""
+        try:
+            if self._conn is not None:
+                cur = self._conn.cursor()
+            else:
+                cur = duckdb.connect(self.database, read_only=self._read_only)
+                self._configure(cur)
+        except duckdb.Error as exc:
+            raise map_error(exc) from exc
+        try:
+            yield cur
+        finally:
+            cur.close()
 
     def capabilities(self) -> QueryEngineCapabilities:
         return QueryEngineCapabilities(
@@ -86,7 +125,12 @@ class DuckDBQueryEngine:
         )
 
     def _run(self, sql: str, max_rows: int, query_id: str) -> tuple[pa.Table, bool]:
-        cur = self.conn.cursor()
+        with self.session() as cur:
+            return self._run_on(cur, sql, max_rows, query_id)
+
+    def _run_on(
+        self, cur: duckdb.DuckDBPyConnection, sql: str, max_rows: int, query_id: str
+    ) -> tuple[pa.Table, bool]:
         self._running[query_id] = cur
         try:
             rel = cur.sql(sql)
@@ -110,7 +154,6 @@ class DuckDBQueryEngine:
             raise map_error(exc) from exc
         finally:
             self._running.pop(query_id, None)
-            cur.close()
 
     async def execute(
         self, sql: str, *, max_rows: int = 10_000, timeout_s: int = 300
@@ -141,13 +184,11 @@ class DuckDBQueryEngine:
 
     async def explain(self, sql: str) -> str:
         def run() -> str:
-            cur = self.conn.cursor()
-            try:
-                rows = cur.execute(f"EXPLAIN {sql}").fetchall()
-            except duckdb.Error as exc:
-                raise map_error(exc) from exc
-            finally:
-                cur.close()
+            with self.session() as cur:
+                try:
+                    rows = cur.execute(f"EXPLAIN {sql}").fetchall()
+                except duckdb.Error as exc:
+                    raise map_error(exc) from exc
             return "\n".join(str(r[-1]) for r in rows)
 
         return await asyncio.to_thread(run)

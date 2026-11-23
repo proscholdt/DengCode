@@ -39,12 +39,12 @@ class TestDuckDBCatalog(CatalogContract):
 
     @pytest.fixture
     def catalog(self, engine: DuckDBQueryEngine) -> DuckDBCatalog:
-        return DuckDBCatalog(engine.conn)
+        return DuckDBCatalog(engine)
 
 
 def test_catalog_shares_connection_with_peer_engine(engine: DuckDBQueryEngine) -> None:
     ctx = AdapterContext(workspace="t", peers={"query_engine": engine})
-    assert DuckDBCatalog.from_config({}, ctx)._conn is engine.conn
+    assert DuckDBCatalog.from_config({}, ctx)._engine is engine
 
 
 async def test_file_database_relative_to_project(tmp_path: Path) -> None:
@@ -52,6 +52,12 @@ async def test_file_database_relative_to_project(tmp_path: Path) -> None:
     eng = DuckDBQueryEngine.from_config({"database": "dados/local.duckdb"}, ctx)
     await eng.execute("CREATE TABLE t AS SELECT 1 AS x")
     assert (tmp_path / "dados" / "local.duckdb").exists()
+    # sem conexão aberta entre operações: outro processo pode escrever no arquivo
+    other = duckdb.connect(str(tmp_path / "dados" / "local.duckdb"))
+    other.execute("INSERT INTO t VALUES (2)")
+    other.close()
+    result = await eng.execute("SELECT count(*) AS n FROM t")
+    assert result.preview.column("n").to_pylist() == [2]
 
 
 async def test_reads_csv_files_directly(tmp_path: Path, engine: DuckDBQueryEngine) -> None:

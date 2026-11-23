@@ -31,15 +31,15 @@ class DuckDBCatalog:
     info: ClassVar[AdapterInfo] = AdapterInfo(name="duckdb", port=PortKind.CATALOG, version="0.1.0")
     name = "duckdb"
 
-    def __init__(self, conn: duckdb.DuckDBPyConnection) -> None:
-        self._conn = conn
+    def __init__(self, engine: DuckDBQueryEngine) -> None:
+        self._engine = engine
 
     @classmethod
     def from_config(cls, cfg: dict[str, Any], ctx: AdapterContext) -> DuckDBCatalog:
         peer = ctx.peers.get("query_engine")
-        if isinstance(peer, DuckDBQueryEngine):  # mesmo banco do motor de consulta
-            return cls(peer.conn)
-        return cls(DuckDBQueryEngine.from_config(cfg, ctx).conn)
+        if isinstance(peer, DuckDBQueryEngine) and "database" not in cfg:
+            return cls(peer)  # mesmo banco do motor de consulta
+        return cls(DuckDBQueryEngine.from_config(cfg, ctx))
 
     def capabilities(self) -> CatalogCapabilities:
         return CatalogCapabilities(
@@ -49,14 +49,12 @@ class DuckDBCatalog:
     def _query(
         self, sql: str, params: list[Any] | None = None
     ) -> tuple[list[str], list[tuple[Any, ...]]]:
-        cur = self._conn.cursor()
-        try:
-            rows = cur.execute(sql, params or []).fetchall()
-            return [d[0] for d in cur.description or []], rows
-        except duckdb.Error as exc:
-            raise map_error(exc) from exc
-        finally:
-            cur.close()
+        with self._engine.session() as cur:
+            try:
+                rows = cur.execute(sql, params or []).fetchall()
+                return [d[0] for d in cur.description or []], rows
+            except duckdb.Error as exc:
+                raise map_error(exc) from exc
 
     async def _aquery(self, sql: str, params: list[Any] | None = None) -> list[tuple[Any, ...]]:
         return (await asyncio.to_thread(self._query, sql, params))[1]

@@ -1,0 +1,46 @@
+version: 2
+
+models:
+  - name: silver_pedidos
+    description: Pedidos deduplicados e tipados (uma linha por pedido).
+    columns:
+      - name: id_pedido
+        description: Identificador do pedido.
+        data_tests:
+          - unique
+          - not_null
+      - name: id_cliente
+        description: Cliente que fez o pedido.
+      - name: data_pedido
+        description: Data do pedido (normalizada dos dois formatos da origem).
+      - name: status
+        description: Status em minúsculas.
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ["entregue", "enviado", "cancelado", "pendente"]
+      - name: valor_total
+        description: Valor total do pedido em reais.
+
+  - name: silver_clientes
+    description: Clientes tipados (contém PII — nome, e-mail, CPF, telefone).
+    columns:
+      - name: id_cliente
+        description: Identificador do cliente.
+        data_tests:
+          - unique
+          - not_null
+      - name: nome
+        description: Nome completo (PII).
+      - name: email
+        description: E-mail (PII).
+      - name: cpf
+        description: CPF (PII).
+      - name: telefone
+        description: Telefone (PII).
+      - name: cidade
+        description: Cidade.
+      - name: uf
+        description: Unidade federativa.
+      - name: data_cadastro
+        description: Data de cadastro.

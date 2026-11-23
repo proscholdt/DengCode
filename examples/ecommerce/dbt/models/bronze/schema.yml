@@ -1,0 +1,9 @@
+version: 2
+
+models:
+  - name: bronze_pedidos
+    description: Pedidos brutos (todas as colunas como texto).
+  - name: bronze_clientes
+    description: Clientes brutos (todas as colunas como texto).
+  - name: bronze_itens_pedido
+    description: Itens de pedido brutos (todas as colunas como texto).

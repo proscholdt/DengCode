@@ -1,0 +1,15 @@
+version: 2
+
+models:
+  - name: gold_vendas_diarias
+    description: Pedidos e receita por dia (pedidos cancelados ficam de fora).
+    columns:
+      - name: data_pedido
+        description: Dia das vendas.
+        data_tests:
+          - not_null
+          - unique
+      - name: quantidade_pedidos
+        description: Número de pedidos não cancelados no dia.
+      - name: receita
+        description: Soma de valor_total dos pedidos não cancelados no dia.

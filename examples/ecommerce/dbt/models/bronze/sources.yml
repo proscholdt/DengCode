@@ -1,0 +1,15 @@
+version: 2
+
+sources:
+  - name: raw
+    description: CSVs brutos gerados por examples/ecommerce/gerar_dados.py (tudo texto).
+    meta:
+      # relativo ao diretório do projeto dbt (cwd do dbt)
+      external_location: "read_csv('../{name}.csv', header = true, all_varchar = true)"
+    tables:
+      - name: pedidos
+        description: Pedidos com sujeira de origem (duplicatas, datas em dois formatos, valor como texto).
+      - name: clientes
+        description: Cadastro de clientes (contém PII — nome, e-mail, CPF, telefone).
+      - name: itens_pedido
+        description: Itens de cada pedido.

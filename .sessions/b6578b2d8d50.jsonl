@@ -1,3 +1,0 @@
-{"meta": {"id": "b6578b2d8d50", "workspace": "teste", "project_dir": "C:\\Users\\Usuario\\Desktop\\HPSBI\\harness-dados\\DengCode", "stack": null, "env": "dev", "title": "oi", "created_at": "2026-11-23T22:30:04.914531Z", "updated_at": "2026-11-23T22:30:04.927240Z", "input_tokens": 100, "output_tokens": 20, "cost_usd": 0.0006, "system_prompt": null}}
-{"role":"user","parts":[{"type":"text","text":"oi"}]}
-{"role":"assistant","parts":[{"type":"text","text":"Olá!"}]}

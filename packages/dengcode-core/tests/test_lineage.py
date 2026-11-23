@@ -61,6 +61,7 @@ def test_chain_and_select_star_through_models() -> None:
     edges = build_column_lineage(models, "duckdb")
     graph = LineageGraph(edges)
     found = graph.resolve("bronze_pedidos.canal")
+    assert found is not None
     assert found == ("main.bronze_pedidos.canal", "column")
     impacted = {i.entity for i in graph.walk(found[0])}
     assert "main.silver_pedidos.canal" in impacted

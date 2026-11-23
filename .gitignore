@@ -33,3 +33,8 @@ vscode-extension/dist/
 .DS_Store
 Thumbs.db
 .idea/
+
+# Bancos locais e sessões de teste
+*.duckdb
+*.duckdb.wal
+.sessions/

@@ -69,9 +69,9 @@ def last_results(llm: FakeLLM) -> list[ToolResultPart]:
     return llm.requests[-1].messages[-1].tool_results()
 
 
-async def test_plain_text_turn_ends() -> None:
+async def test_plain_text_turn_ends(project: Path) -> None:
     llm = FakeLLM([text("Olá!")])
-    agent = make_agent(Path.cwd(), llm)
+    agent = make_agent(project, llm)
     result = await agent.run("oi")
     assert result.reason == "end"
     assert result.text == "Olá!"

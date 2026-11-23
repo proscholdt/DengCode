@@ -14,6 +14,7 @@ root_packages =
     dengcode_adapter_duckdb
     dengcode_adapter_postgres
     dengcode_adapter_minio
+    dengcode_adapter_dbt
 include_external_packages = True
 
 [importlinter:contract:core-isolado]
@@ -32,6 +33,7 @@ forbidden_modules =
     dengcode_adapter_duckdb
     dengcode_adapter_postgres
     dengcode_adapter_minio
+    dengcode_adapter_dbt
 
 [importlinter:contract:core-sem-sdks]
 name = core não importa SDKs de nuvem, de LLM nem engines de dados
@@ -64,6 +66,7 @@ source_modules =
     dengcode_adapter_duckdb
     dengcode_adapter_postgres
     dengcode_adapter_minio
+    dengcode_adapter_dbt
 forbidden_modules =
     dengcode_engine
     dengcode_cli
@@ -91,6 +94,7 @@ forbidden_modules =
     dengcode_adapter_duckdb
     dengcode_adapter_postgres
     dengcode_adapter_minio
+    dengcode_adapter_dbt
 
 [importlinter:contract:adapters-independentes]
 name = adapters não importam uns aos outros
@@ -103,3 +107,4 @@ modules =
     dengcode_adapter_duckdb
     dengcode_adapter_postgres
     dengcode_adapter_minio
+    dengcode_adapter_dbt

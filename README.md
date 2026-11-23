@@ -45,6 +45,46 @@ uv run dengcode --version
 uv run dengcode adapters list
 ```
 
+## Usando
+
+```
+# 1) só o projeto + DuckDB + LLM local (Ollama), sem Docker
+ollama pull qwen2.5:7b
+uv run dengcode chat                       # stack "local" é o padrão
+
+# trocar o LLM sem editar YAML (chave em .env: ANTHROPIC_API_KEY / OPENAI_API_KEY)
+uv run dengcode chat --llm anthropic       # padrão: claude-opus-5-5 (rápido: claude-haiku-5-5)
+uv run dengcode chat --llm openai:gpt-5
+
+# 2) exemplo de e-commerce com dbt (bronze → silver → gold)
+cd examples/ecommerce
+uv run --project ../.. dengcode chat --stack ecommerce
+#   "adicione a coluna canal_venda em silver_pedidos e propague até gold_vendas_diarias"
+
+# 3) stack open source completa em Docker (MinIO, Postgres, Trino, Iceberg, Airflow, Kafka)
+cp .env.example .env
+make up-oss
+uv run dengcode stack doctor opensource
+uv run dengcode chat --stack opensource
+#   "por que a DAG carga_pedidos falhou?"
+```
+
+Outros comandos: `dengcode run "<tarefa>" --json` (headless/CI), `undo`,
+`init` (cria `.dengcode/PROJETO.md`), `workspace new|list|use`, `catalog sync`,
+`memory list|confirm|forget`, `audit list --since 7d`, `sessions list`,
+`stack list|show|validate|doctor`, `adapters list`.
+
+### Como o DengCode protege os dados
+
+- Leitura livre; escrita de arquivo, DDL/DML, disparo de pipeline e comandos fora
+  da lista permitida pedem aprovação (com diff ou card de SQL). Em `prod`, escrita
+  é negada. Tabelas protegidas (stack ou `PROJETO.md`) nunca são escritas.
+- Todo SQL passa pelo SqlGuard (sqlglot): classificação, avisos (`DELETE` sem
+  `WHERE`, `DROP`…), `LIMIT` em consultas exploratórias, custo estimado.
+- PII (e-mail, CPF, CNPJ, telefone, cartão) é mascarada em toda saída de
+  ferramenta antes de chegar ao LLM; a memória guarda só metadados.
+- Toda query (executada, negada ou recusada) vai para a auditoria append-only.
+
 ## Estrutura
 
 ```

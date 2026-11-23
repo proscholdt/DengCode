@@ -1,0 +1,39 @@
+# Índice da base de conhecimento embutida. O título e o resumo vão para o
+# prompt do agente; o conteúdo é lido sob demanda pela ferramenta knowledge_read.
+# "path" é relativo a esta pasta (knowledge/).
+- id: modelagem-dimensional
+  title: Modelagem dimensional
+  summary: Fatos, dimensões, grão, chaves substitutas, dimensões conformadas e aditividade de medidas.
+  path: fundamentos/modelagem-dimensional.md
+- id: scd
+  title: SCD — dimensões que mudam lentamente
+  summary: Tipos 0/1/2/3/4/6, colunas de vigência, carga com merge e armadilhas de reprocessamento.
+  path: fundamentos/scd.md
+- id: medallion
+  title: Arquitetura medallion
+  summary: O que pertence a bronze, silver e gold, contratos entre camadas e mudanças compatíveis.
+  path: fundamentos/medallion.md
+- id: incremental-idempotencia
+  title: Cargas incrementais e idempotência
+  summary: Watermark, merge/upsert, deduplicação, dados atrasados e como provar que a carga é idempotente.
+  path: fundamentos/incremental-idempotencia.md
+- id: backfill
+  title: Backfill
+  summary: Estratégias e janelas de reprocessamento, impacto downstream, custo, plano de volta e verificação.
+  path: fundamentos/backfill.md
+- id: cdc
+  title: CDC — captura de dados alterados
+  summary: CDC por log x por consulta, ordenação por posição, deletes, tombstones e upsert por chave.
+  path: fundamentos/cdc.md
+- id: qualidade-de-dados
+  title: Qualidade de dados
+  summary: Dimensões de qualidade, testes de unicidade, nulos, integridade, faixa, volume, frescor e data diff.
+  path: fundamentos/qualidade-de-dados.md
+- id: particionamento
+  title: Particionamento e organização física
+  summary: Partição x clustering, cardinalidade, pruning, small files e compactação.
+  path: fundamentos/particionamento.md
+- id: lgpd
+  title: LGPD para engenharia de dados
+  summary: Dados pessoais e sensíveis, minimização, pseudonimização x anonimização, retenção e limites do agente.
+  path: fundamentos/lgpd.md

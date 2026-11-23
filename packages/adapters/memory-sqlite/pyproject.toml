@@ -1,0 +1,18 @@
+[project]
+name = "dengcode-adapter-memory-sqlite"
+version = "0.1.0"
+description = "DengCode — adapter MemoryStore em SQLite (FTS5 + sqlite-vec + grafo de lineage)."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+dependencies = ["dengcode-core", "sqlite-vec>=0.1.6"]
+
+[project.entry-points."dengcode.adapters"]
+sqlite = "dengcode_adapter_memory_sqlite.store:SqliteMemoryStore"
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dengcode_adapter_memory_sqlite"]

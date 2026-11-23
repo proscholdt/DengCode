@@ -9,6 +9,7 @@ dependencies = ["dengcode-core", "httpx2>=2.12", "pyyaml>=6.0"]
 
 [project.entry-points."dengcode.adapters"]
 ollama = "dengcode_adapter_llm_ollama.llm:OllamaLLM"
+ollama_embedding = "dengcode_adapter_llm_ollama.embedding:OllamaEmbedding"
 
 [build-system]
 requires = ["hatchling>=1.25"]

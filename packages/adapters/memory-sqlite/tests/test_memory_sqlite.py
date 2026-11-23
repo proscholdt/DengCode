@@ -18,6 +18,24 @@ from dengcode_testkit.contracts.memory import WS_A, WS_B, MemoryStoreContract, m
 from dengcode_testkit.fake_embedding import FakeEmbedding
 
 
+def _can_load_vec() -> bool:
+    """Alguns Pythons (ex.: builds do macOS) não carregam extensões do SQLite."""
+    conn = sqlite3.connect(":memory:")
+    try:
+        conn.enable_load_extension(True)
+        sqlite_vec.load(conn)
+        return True
+    except (AttributeError, sqlite3.Error, OSError):
+        return False
+    finally:
+        conn.close()
+
+
+needs_vec = pytest.mark.skipif(
+    not _can_load_vec(), reason="este Python não carrega extensões do SQLite (sqlite-vec)"
+)
+
+
 def _broken_load(_conn: sqlite3.Connection) -> None:
     raise sqlite3.OperationalError("not authorized")
 
@@ -70,6 +88,7 @@ def hybrid(tmp_path: Path) -> Iterator[SqliteMemoryStore]:
     s.close()
 
 
+@needs_vec
 async def test_vector_only_match_is_reported(hybrid: SqliteMemoryStore) -> None:
     await hybrid.upsert(make_record(WS_A, "r1", title="Atraso no pedido", body="Carga lenta."))
     # "pedidos" não casa "pedido" no FTS (prefixo), mas o vetor aproxima os dois
@@ -79,6 +98,7 @@ async def test_vector_only_match_is_reported(hybrid: SqliteMemoryStore) -> None:
     assert hits[0].matched_by == ["vetor"]
 
 
+@needs_vec
 async def test_hybrid_hit_reports_both_sources(hybrid: SqliteMemoryStore) -> None:
     await seed(hybrid)
     hits = await hybrid.search(WS_A, "receita líquida")
@@ -88,6 +108,7 @@ async def test_hybrid_hit_reports_both_sources(hybrid: SqliteMemoryStore) -> Non
     assert hits[0].score == pytest.approx(2 / 61)
 
 
+@needs_vec
 async def test_embeds_title_and_body_and_query(tmp_path: Path) -> None:
     fake = FakeEmbedding()
     store = SqliteMemoryStore(tmp_path / "m.db", embedder=fake)
@@ -97,12 +118,14 @@ async def test_embeds_title_and_body_and_query(tmp_path: Path) -> None:
     store.close()
 
 
+@needs_vec
 async def test_vector_search_is_workspace_isolated(hybrid: SqliteMemoryStore) -> None:
     await hybrid.upsert(make_record(WS_B, "b1", title="Atraso no pedido"))
     assert await hybrid.search(WS_A, "pedidos") == []
     assert [h.record.id for h in await hybrid.search(WS_B, "pedidos")] == ["b1"]
 
 
+@needs_vec
 async def test_vector_kinds_filter(hybrid: SqliteMemoryStore) -> None:
     await hybrid.upsert(make_record(WS_A, "r1", title="Atraso no pedido"))
     await hybrid.upsert(make_record(WS_A, "r2", title="Atraso no pedido", kind=MemoryKind.INCIDENT))
@@ -122,6 +145,7 @@ async def test_project_scope_sees_workspace_wide_records(hybrid: SqliteMemorySto
     assert await hybrid.get(outro, "vendas") is None
 
 
+@needs_vec
 async def test_embedder_failure_keeps_record_and_falls_back(
     tmp_path: Path, caplog: pytest.LogCaptureFixture
 ) -> None:
@@ -142,6 +166,7 @@ async def test_embedder_failure_keeps_record_and_falls_back(
     again.close()
 
 
+@needs_vec
 async def test_dimension_change_reindexes(tmp_path: Path) -> None:
     first = SqliteMemoryStore(tmp_path / "m.db", embedder=FakeEmbedding(dimensions=32))
     await first.upsert(make_record(WS_A, "r1", title="Atraso no pedido"))
@@ -210,6 +235,7 @@ async def test_persists_across_instances_with_wal(tmp_path: Path) -> None:
     assert {"records", "records_fts", "edges"} <= tables
 
 
+@needs_vec
 async def test_vec_table_is_created_with_embedder_dimension(tmp_path: Path) -> None:
     path = tmp_path / "m.db"
     store = SqliteMemoryStore(path, embedder=FakeEmbedding(dimensions=48))

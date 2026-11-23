@@ -77,6 +77,10 @@ def _load_table() -> dict[str, dict[str, Any]]:
 class AnthropicLLM:
     info: ClassVar[AdapterInfo] = AdapterInfo(name=PROVIDER, port=PortKind.LLM, version="0.1.0")
     name = PROVIDER
+    default_models: ClassVar[dict[str, str]] = {
+        "main": "claude-opus-5-5",
+        "fast": "claude-haiku-5-5",
+    }
 
     def __init__(
         self,

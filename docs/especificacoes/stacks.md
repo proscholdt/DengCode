@@ -58,6 +58,8 @@ policy:
 - Merge profundo de dicionários; listas são **substituídas**, não concatenadas.
 - Ciclo de `extends` → erro.
 - `null` explícito remove a porta herdada.
+- Seção `llm`: trocar de `provider` recomeça a seção (chaves de um adapter não
+  valem para outro); `model` e `models` substituem um ao outro.
 
 ## Validação
 

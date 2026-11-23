@@ -76,6 +76,7 @@ class _PendingCall:
 class OpenAILLM:
     info: ClassVar[AdapterInfo] = AdapterInfo(name="openai", port=PortKind.LLM, version="0.1.0")
     name = "openai"
+    default_models: ClassVar[dict[str, str]] = {"main": "gpt-5", "fast": "gpt-5-mini"}
 
     def __init__(
         self,

@@ -2,8 +2,9 @@
 
 from __future__ import annotations
 
+import inspect
 import logging
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator, Awaitable, Callable
 
 from dengcode_core.errors import TransientError
 from dengcode_core.llm.events import StreamEvent
@@ -13,8 +14,8 @@ from dengcode_core.llm.profile import ModelProfile
 
 log = logging.getLogger(__name__)
 
-OnFallback = Callable[[str, str, str], None]
-"""(provedor_origem, provedor_destino, motivo)."""
+OnFallback = Callable[[str, str, str], Awaitable[None] | None]
+"""(provedor_origem, provedor_destino, motivo); pode ser síncrono ou assíncrono."""
 
 
 class FallbackLLM:
@@ -79,7 +80,9 @@ class FallbackLLM:
             self._switched = True
             self.name = self._fallback.name
             if self._on_fallback:
-                self._on_fallback(self._primary.name, self._fallback.name, reason)
+                result = self._on_fallback(self._primary.name, self._fallback.name, reason)
+                if inspect.isawaitable(result):
+                    await result
         async for ev in self._fallback.stream(
             request.model_copy(update={"model": self._model(request.model)})
         ):

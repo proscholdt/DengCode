@@ -34,6 +34,7 @@ class SessionMeta(BaseModel):
     input_tokens: int = 0
     output_tokens: int = 0
     cost_usd: float | None = None
+    system_prompt: str | None = None  # congelado na criação: o prefixo não muda ao retomar
 
 
 class Session:

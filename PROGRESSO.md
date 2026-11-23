@@ -5,13 +5,13 @@
 
 ## Estado atual
 
-- Fase atual: **2 — Core + LLM**
+- Fase atual: **3 — Dados locais**
 - Última atualização: 2026-11-23
 
 ## Fases
 
 - [x] Fase 1 — Fundação
-- [ ] Fase 2 — Core + LLM
+- [x] Fase 2 — Core + LLM
 - [ ] Fase 3 — Dados locais
 - [ ] Fase 4 — Verificação e transformação
 - [ ] Fase 5 — Memória, orquestração e streaming (preset open source completo)
@@ -27,7 +27,7 @@
       `dengcode_*`, comando `dengcode`, pasta `~/.dengcode/`, entry points
       `dengcode.adapters`, extensões ACP `_dengcode/*`)
 - [ ] Executável único: PyInstaller ou Nuitka?
-- [ ] TUI rica (Textual) já na fase 2 ou CLI simples até a fase 6?
+- [x] TUI rica (Textual) já na fase 2 ou CLI simples até a fase 6? → **CLI simples (Rich) até a fase 6**
 - [ ] Orquestrador open source padrão: Airflow ou Dagster?
 
 ## Decisões tomadas na implementação
@@ -39,6 +39,13 @@
 | 1 | Fronteira do core verificada duas vezes: `import-linter` (contratos em `.importlinter`) e ruff `TID251` (`packages/dengcode-core/ruff.toml`). |
 | 1 | Entry point aponta para a **classe** do adapter, que expõe `info: AdapterInfo` (nome + porta) e `from_config(cfg, ctx)`. O registro indexa por (porta, nome), então um pacote pode registrar várias portas com o mesmo nome (ex.: duckdb como QueryEngine e Catalog). |
 | 1 | `pyarrow-stubs` como dependência de dev para o pyright strict no core. |
+| 2 | Formato canônico ganhou `ProviderStatePart`/`ProviderState` para replay exato do turno do assistente (ADR 0006). |
+| 2 | Adapter Anthropic: SDK `anthropic` 2.x (sobre `httpx2`), `messages.stream` beta; pensamento adaptativo, `drop_block` para blocos que não batem após compactação do core, `fallbacks: "default"` em recusas (desligável: `refusal_fallback: false`), esforço `high` (configurável: `effort`). Sem `temperature`. |
+| 2 | Testes de LLM com respostas gravadas via `httpx2.MockTransport` (os SDKs atuais usam `httpx2`; `respx` não se aplica). Sem rede no CI. |
+| 2 | Prompt de sistema congelado na sessão (`SessionMeta.system_prompt`): retomar não muda o prefixo. |
+| 2 | Preset novo `local` (disco + Ollama, sem Docker) é a stack padrão da CLI; `--llm provedor[:modelo]` troca o LLM sem editar YAML (modelos padrão declarados por cada adapter). |
+| 2 | Na herança, trocar o `provider` do `llm` recomeça a seção; `model`/`models` substituem um ao outro (documentado em `stacks.md`). |
+| 2 | Tool call truncada por `max_tokens` nunca é executada (o loop devolve erro ao modelo). |
 | 1 | Ruff `N818` desligado: nomes de erro seguem a especificação (`CostLimitExceeded`, `UnsupportedOperation`). |
 | 1 | Adapter `local-fs` já implementa a `StoragePort` completa (CSV/Parquet/JSON via PyArrow); escrita desligada por padrão. |
 
@@ -46,4 +53,5 @@
 
 | Data | Fase/tarefa | O que foi feito | Pendências |
 | --- | --- | --- | --- |
+| 2026-11-23 | Fase 2 | Formato canônico, LLMPort, retry/backoff/jitter + Retry-After, fallback de provedor; ferramentas de arquivo e shell; PermissionPolicy; checkpoints e `undo`; EventBus; ContextManager (truncamento, marcadores de conteúdo não confiável, compactação com o modelo `fast`); sessões JSONL; loop do agente com leituras em paralelo, orçamento e cancelamento; FakeLLM e `LLMContract`; adapters Anthropic, OpenAI (inclui Azure via `variant: azure` e `base_url`) e Ollama; carregamento de stacks (`extends`, `env://`, `.env`); CLI `chat`, `run --json`, `undo`, `sessions list`, `stack list/show/validate`. Verificado ao vivo com Ollama `qwen2.5:7b`: leu o projeto de exemplo, editou com aprovação, rodou `pytest` (exit 0); `dengcode undo` restaurou; recusa no chat interativo manteve o arquivo. | Anthropic e OpenAI testados só com respostas gravadas (sem chave de API nesta máquina): rodar o critério ao vivo quando houver chave. |
 | 2026-11-23 | Fase 1 | Workspace uv (core, engine, cli, testkit, local-fs), ruff, pyright strict no core, import-linter, erros, registro por entry points, CLI `--version`/`adapters list`, Makefile portátil, Dockerfile multi-stage, compose vazio, CI 3 SO × 2 Pythons, higiene (gitignore, editorconfig, gitattributes, pre-commit). `make lint` e `make test` verdes; `import boto3` no core quebra o lint (ruff e import-linter). | CI verde a confirmar no GitHub após o push. |

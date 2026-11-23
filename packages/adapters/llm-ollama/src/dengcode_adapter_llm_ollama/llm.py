@@ -49,6 +49,7 @@ def _load_table() -> dict[str, dict[str, Any]]:
 class OllamaLLM:
     info: ClassVar[AdapterInfo] = AdapterInfo(name="ollama", port=PortKind.LLM, version="0.1.0")
     name = "ollama"
+    default_models: ClassVar[dict[str, str]] = {"main": "qwen2.5:7b", "fast": "qwen2.5:3b"}
 
     def __init__(
         self,

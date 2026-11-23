@@ -9,7 +9,7 @@ import logging
 from collections.abc import Callable, Iterable
 from dataclasses import dataclass
 from importlib.metadata import EntryPoint, entry_points
-from typing import Any, Protocol, cast
+from typing import Any, ClassVar, Protocol, cast
 
 from dengcode_core.errors import ConfigError
 from dengcode_core.ports.models import AdapterContext, AdapterInfo, PortKind
@@ -22,7 +22,7 @@ log = logging.getLogger(__name__)
 class AdapterClass(Protocol):
     """Forma mínima que a classe de um adapter expõe."""
 
-    info: AdapterInfo
+    info: ClassVar[AdapterInfo]
 
     @classmethod
     def from_config(cls, cfg: dict[str, Any], ctx: AdapterContext) -> Any: ...
@@ -33,7 +33,7 @@ class RegisteredAdapter:
     entry_point: str
     distribution: str | None
     info: AdapterInfo | None
-    cls: AdapterClass | None
+    cls: Any  # a classe do adapter; o registro a expõe como AdapterClass
     error: str | None = None
 
     @property
@@ -52,7 +52,7 @@ def _load(ep: EntryPoint) -> RegisteredAdapter:
     if not isinstance(info, AdapterInfo) or not hasattr(obj, "from_config"):
         msg = "entry point não expõe `info: AdapterInfo` e `from_config`"
         return RegisteredAdapter(ep.name, dist, None, None, msg)
-    return RegisteredAdapter(ep.name, dist, info, cast(AdapterClass, obj))
+    return RegisteredAdapter(ep.name, dist, info, obj)
 
 
 class AdapterRegistry:
@@ -92,7 +92,7 @@ class AdapterRegistry:
                 f"(disponíveis: {known}). Instale o pacote/extra correspondente, "
                 f'ex.: uv tool install "dengcode[oss]".'
             )
-        return item.cls
+        return cast(AdapterClass, item.cls)
 
     def create(self, port: PortKind, name: str, cfg: dict[str, Any], ctx: AdapterContext) -> Any:
         return self.get(port, name).from_config(cfg, ctx)

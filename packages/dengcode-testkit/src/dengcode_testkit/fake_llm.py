@@ -9,7 +9,7 @@ from __future__ import annotations
 import json
 from collections.abc import AsyncIterator, Iterable
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, ClassVar
 
 from dengcode_core.errors import AdapterError, DengCodeError
 from dengcode_core.llm.events import (
@@ -24,6 +24,7 @@ from dengcode_core.llm.events import (
 from dengcode_core.llm.messages import ChatRequest
 from dengcode_core.llm.port import estimate_request_tokens
 from dengcode_core.llm.profile import ModelProfile
+from dengcode_core.ports.models import AdapterInfo, PortKind
 
 
 @dataclass
@@ -114,3 +115,19 @@ class FakeLLM:
         yield Usage(input_tokens=turn.input_tokens, output_tokens=turn.output_tokens)
         reason = turn.stop or ("tool_use" if turn.tool_calls else "end")
         yield Stop(reason=reason)  # type: ignore[arg-type]
+
+
+class FakeLLMAdapter:
+    """Classe registrável (``info`` + ``from_config``) para testes do motor.
+
+    ``cfg["script"]``: lista de textos; cada um vira um turno de texto.
+    """
+
+    info: ClassVar[AdapterInfo] = AdapterInfo(name="fake", port=PortKind.LLM, version="0")
+    default_models: ClassVar[dict[str, str]] = {"main": "fake-main", "fast": "fake-fast"}
+
+    @classmethod
+    def from_config(cls, cfg: dict[str, Any], ctx: Any) -> FakeLLM:
+        llm = FakeLLM([FakeTurn(text=t) for t in cfg.get("script", ["ok"])])
+        llm.name = str(cfg.get("name", "fake"))
+        return llm

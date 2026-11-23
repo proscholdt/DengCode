@@ -1,0 +1,18 @@
+[project]
+name = "dengcode-adapter-dbt"
+version = "0.1.0"
+description = "DengCode — adapter dbt-core (TransformPort), executado em subprocesso."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+dependencies = ["dengcode-core", "dbt-core>=1.9", "dbt-duckdb>=1.9"]
+
+[project.entry-points."dengcode.adapters"]
+dbt_core = "dengcode_adapter_dbt.transform:DbtTransform"
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dengcode_adapter_dbt"]

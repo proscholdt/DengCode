@@ -1,0 +1,10 @@
+# Perfil local: DuckDB em arquivo, relativo ao diretório do projeto dbt
+# (o dbt roda com cwd aqui). Sem segredos.
+ecommerce:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: ecommerce.duckdb
+      schema: main
+      threads: 1

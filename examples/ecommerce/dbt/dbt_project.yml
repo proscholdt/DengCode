@@ -1,0 +1,21 @@
+# Projeto dbt de exemplo do DengCode: e-commerce em camadas (bronze → silver → gold).
+name: ecommerce
+version: "1.0.0"
+config-version: 2
+profile: ecommerce
+
+model-paths: ["models"]
+macro-paths: ["macros"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+target-path: target
+clean-targets: ["target", "dbt_packages"]
+
+models:
+  ecommerce:
+    bronze:
+      +materialized: view
+    silver:
+      +materialized: table
+    gold:
+      +materialized: table

@@ -114,5 +114,9 @@ class Tool[A: BaseModel](ABC):
     async def preview(self, args: A, ctx: ToolContext) -> Preview | None:
         return None
 
+    async def on_blocked(self, args: A, request: ActionRequest, decision: str, reason: str) -> None:
+        """Chamado quando a política nega ou o usuário recusa (ex.: para auditar)."""
+        return None
+
     @abstractmethod
     async def run(self, args: A, ctx: ToolContext) -> ToolResult: ...

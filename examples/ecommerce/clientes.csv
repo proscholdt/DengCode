@@ -1,0 +1,61 @@
+id_cliente,nome,email,cpf,telefone,cidade,uf,data_cadastro
+1,Vanessa Araújo,vanessa.araujo1@exemplo.com,620.116.410-39,(33) 92455-9836,Fortaleza,CE,2025-01-21
+2,João Lima,joao.lima2@teste.org,079.337.915-65,(52) 91736-1994,Fortaleza,CE,2024-10-05
+3,Otávio Carvalho,otavio.carvalho3@exemplo.com.br,888.444.205-20,(85) 97866-7446,Goiânia,GO,2024-02-18
+4,Natália Ferreira,natalia.ferreira4@exemplo.com.br,842.377.826-62,(12) 97920-8671,Curitiba,PR,2025-05-29
+5,Bruno Oliveira,bruno.oliveira5@teste.org,524.485.628-65,(26) 98012-9657,Porto Alegre,RS,2024-08-31
+6,Otávio Pereira,otavio.pereira6@teste.org,071.310.506-28,(89) 91289-7616,Curitiba,PR,2024-08-17
+7,Patrícia Santos,patricia.santos7@exemplo.com.br,494.405.553-60,(36) 95087-7589,Curitiba,PR,2024-12-08
+8,Larissa Ferreira,larissa.ferreira8@exemplo.com,990.168.152-95,(81) 96913-7266,Manaus,AM,2025-08-20
+9,Diego Araújo,diego.araujo9@exemplo.com,651.303.480-95,(52) 99303-9283,Recife,PE,2025-08-02
+10,Carla Pereira,carla.pereira10@exemplo.com.br,663.940.468-09,(89) 99261-2811,Curitiba,PR,2024-05-02
+11,Vanessa Oliveira,vanessa.oliveira11@teste.org,245.937.454-20,(45) 93625-8216,Belo Horizonte,MG,2025-07-10
+12,Henrique Lima,henrique.lima12@teste.org,043.691.231-78,(93) 97598-6033,Salvador,BA,2024-09-12
+13,Felipe Oliveira,felipe.oliveira13@teste.org,837.521.007-29,(22) 97481-2653,Salvador,BA,2024-07-22
+14,Rafael Rodrigues,rafael.rodrigues14@exemplo.com.br,937.206.626-59,(53) 95950-1537,Belo Horizonte,MG,2024-02-18
+15,Isabela Santos,isabela.santos15@exemplo.com.br,581.626.852-00,(18) 97191-2859,Salvador,BA,2024-03-23
+16,Vanessa Rodrigues,vanessa.rodrigues16@teste.org,747.120.017-04,(84) 96774-9068,Recife,PE,2024-10-23
+17,João Martins,joao.martins17@teste.org,961.014.063-77,(18) 91768-2053,Porto Alegre,RS,2025-01-31
+18,Isabela Almeida,isabela.almeida18@teste.org,251.639.919-73,(47) 96187-8734,Porto Alegre,RS,2024-11-09
+19,Diego Araújo,diego.araujo19@exemplo.com,492.845.200-37,(80) 96921-3619,Manaus,AM,2024-03-27
+20,Bruno Pereira,bruno.pereira20@exemplo.com.br,003.076.063-17,(59) 98668-2680,Manaus,AM,2025-07-31
+21,Eduarda Ferreira,eduarda.ferreira21@exemplo.com.br,358.192.155-32,(58) 96250-9469,São Paulo,SP,2024-09-22
+22,Thiago Silva,thiago.silva22@teste.org,003.130.795-79,(42) 95650-7345,Belo Horizonte,MG,2024-11-03
+23,Felipe Lima,felipe.lima23@teste.org,719.433.658-81,(31) 97453-4986,Curitiba,PR,2024-04-04
+24,Bruno Araújo,bruno.araujo24@exemplo.com.br,935.568.002-33,(46) 94805-7166,Porto Alegre,RS,2024-07-10
+25,Carla Silva,carla.silva25@teste.org,025.923.932-18,(46) 94053-8114,Recife,PE,2024-01-27
+26,Felipe Santos,felipe.santos26@teste.org,613.781.399-17,(24) 95856-1640,Salvador,BA,2025-08-02
+27,Patrícia Silva,patricia.silva27@exemplo.com.br,646.083.968-97,(53) 93212-7632,Rio de Janeiro,RJ,2024-12-01
+28,Ana Silva,ana.silva28@teste.org,760.739.563-63,(96) 98667-8266,Goiânia,GO,2024-10-11
+29,Vanessa Gomes,vanessa.gomes29@exemplo.com,715.920.303-86,(17) 95561-9788,Fortaleza,CE,2024-04-22
+30,Bruno Gomes,bruno.gomes30@exemplo.com.br,140.861.416-20,(78) 91718-3533,Goiânia,GO,2025-07-15
+31,Gabriela Ferreira,gabriela.ferreira31@teste.org,165.648.471-49,(99) 92258-5996,Rio de Janeiro,RJ,2024-03-29
+32,Isabela Ferreira,isabela.ferreira32@teste.org,763.203.465-07,(27) 91930-6870,Porto Alegre,RS,2024-04-29
+33,Isabela Souza,isabela.souza33@teste.org,410.719.599-64,(57) 99804-6401,Porto Alegre,RS,2025-06-27
+34,Bruno Pereira,bruno.pereira34@exemplo.com,925.020.567-80,(22) 97984-4983,Belo Horizonte,MG,2024-02-15
+35,Gabriela Ferreira,gabriela.ferreira35@exemplo.com,523.530.212-55,(87) 95462-9554,Belo Horizonte,MG,2024-05-24
+36,Henrique Souza,henrique.souza36@exemplo.com,382.246.731-62,(17) 94063-5704,São Paulo,SP,2024-03-04
+37,João Martins,joao.martins37@exemplo.com,688.647.033-73,(75) 99226-7369,Belo Horizonte,MG,2024-03-23
+38,Isabela Almeida,isabela.almeida38@teste.org,932.691.474-73,(33) 95874-6918,Belo Horizonte,MG,2024-02-10
+39,Gabriela Silva,gabriela.silva39@teste.org,842.491.264-04,(38) 94714-1778,Salvador,BA,2024-11-07
+40,Felipe Souza,felipe.souza40@exemplo.com,276.743.181-41,(12) 99287-2718,Porto Alegre,RS,2024-02-09
+41,Diego Lima,diego.lima41@exemplo.com.br,614.741.592-14,(72) 93464-5510,Fortaleza,CE,2024-08-16
+42,Natália Gomes,natalia.gomes42@teste.org,078.836.548-70,(63) 95791-1161,Goiânia,GO,2024-07-26
+43,Patrícia Carvalho,patricia.carvalho43@exemplo.com.br,210.220.137-69,(39) 91674-6065,Belo Horizonte,MG,2024-08-22
+44,Henrique Costa,henrique.costa44@exemplo.com,742.547.690-83,(15) 98038-4217,Fortaleza,CE,2024-11-15
+45,Isabela Gomes,isabela.gomes45@exemplo.com,376.802.762-77,(95) 96327-6197,Fortaleza,CE,2024-02-06
+46,Larissa Souza,larissa.souza46@teste.org,839.079.959-61,(58) 93414-8219,Fortaleza,CE,2025-06-23
+47,Sabrina Costa,sabrina.costa47@exemplo.com.br,279.763.791-78,(91) 93380-7216,Manaus,AM,2024-08-29
+48,Larissa Costa,larissa.costa48@exemplo.com,405.939.032-18,(44) 99843-9659,Salvador,BA,2025-03-11
+49,Marcos Gomes,marcos.gomes49@teste.org,890.111.901-30,(86) 98565-7855,Salvador,BA,2025-02-06
+50,Natália Gomes,natalia.gomes50@teste.org,092.542.855-87,(16) 92585-5604,Recife,PE,2024-08-21
+51,Felipe Araújo,felipe.araujo51@teste.org,712.424.842-64,(90) 95229-3174,Porto Alegre,RS,2025-01-04
+52,Larissa Souza,larissa.souza52@teste.org,913.585.428-64,(62) 98312-1271,São Paulo,SP,2025-06-02
+53,Marcos Almeida,marcos.almeida53@exemplo.com.br,082.871.208-53,(97) 91611-7192,São Paulo,SP,2025-04-29
+54,Isabela Lima,isabela.lima54@exemplo.com,056.838.336-20,(53) 93966-2681,Rio de Janeiro,RJ,2024-03-21
+55,Otávio Araújo,otavio.araujo55@exemplo.com.br,720.791.844-58,(58) 92993-1652,Goiânia,GO,2024-10-29
+56,Thiago Araújo,thiago.araujo56@teste.org,998.033.249-26,(59) 99164-3294,Recife,PE,2025-08-02
+57,Eduarda Souza,eduarda.souza57@exemplo.com.br,133.166.371-76,(38) 95526-1786,Fortaleza,CE,2025-08-22
+58,Marcos Santos,marcos.santos58@exemplo.com,727.665.107-02,(74) 91632-4293,Manaus,AM,2025-02-20
+59,Thiago Oliveira,thiago.oliveira59@exemplo.com,242.667.944-10,(80) 97980-9533,São Paulo,SP,2024-06-12
+60,Wagner Ribeiro,wagner.ribeiro60@exemplo.com.br,414.654.449-12,(56) 94993-3637,Goiânia,GO,2025-01-10

@@ -1,0 +1,744 @@
+id_pedido,produto,quantidade,preco_unitario
+1,Mouse sem fio,2,89.90
+1,Cadeira Gamer,2,999.90
+2,Monitor 27,1,1299.00
+3,Hub USB-C,1,129.90
+3,Teclado Mecânico,2,349.00
+4,Mochila Notebook,3,179.00
+4,Mochila Notebook,1,179.00
+5,Mochila Notebook,3,179.00
+5,Hub USB-C,3,129.90
+6,Webcam HD,1,249.50
+7,Teclado Mecânico,2,349.00
+7,Mochila Notebook,2,179.00
+7,Mochila Notebook,1,179.00
+8,Luminária LED,2,99.90
+8,Monitor 27,1,1299.00
+9,Teclado Mecânico,2,349.00
+9,Webcam HD,3,249.50
+9,Cadeira Gamer,3,999.90
+10,Luminária LED,2,99.90
+10,Webcam HD,3,249.50
+11,SSD 1TB,2,459.00
+12,SSD 1TB,2,459.00
+12,SSD 1TB,1,459.00
+13,SSD 1TB,3,459.00
+14,Mouse sem fio,1,89.90
+15,SSD 1TB,2,459.00
+15,Cadeira Gamer,3,999.90
+16,SSD 1TB,2,459.00
+16,Teclado Mecânico,3,349.00
+16,Webcam HD,2,249.50
+17,Mouse sem fio,2,89.90
+17,SSD 1TB,1,459.00
+18,Teclado Mecânico,2,349.00
+18,Teclado Mecânico,3,349.00
+19,Mochila Notebook,3,179.00
+20,Luminária LED,2,99.90
+20,Fone Bluetooth,3,199.90
+20,Cadeira Gamer,1,999.90
+21,Monitor 27,1,1299.00
+21,Webcam HD,3,249.50
+22,Monitor 27,1,1299.00
+22,Webcam HD,2,249.50
+23,Hub USB-C,1,129.90
+24,Webcam HD,1,249.50
+24,Mochila Notebook,1,179.00
+24,SSD 1TB,3,459.00
+24,Webcam HD,3,249.50
+25,Mochila Notebook,3,179.00
+25,Mouse sem fio,3,89.90
+26,Cadeira Gamer,3,999.90
+26,Fone Bluetooth,3,199.90
+27,Mouse sem fio,3,89.90
+27,Fone Bluetooth,1,199.90
+27,Cadeira Gamer,2,999.90
+28,Monitor 27,2,1299.00
+29,Fone Bluetooth,1,199.90
+29,Luminária LED,2,99.90
+29,Mochila Notebook,3,179.00
+29,Webcam HD,2,249.50
+30,Hub USB-C,2,129.90
+31,Cadeira Gamer,2,999.90
+31,Hub USB-C,2,129.90
+31,Hub USB-C,2,129.90
+32,Luminária LED,3,99.90
+32,SSD 1TB,1,459.00
+32,Monitor 27,1,1299.00
+33,Teclado Mecânico,1,349.00
+33,Fone Bluetooth,2,199.90
+33,Hub USB-C,2,129.90
+34,Monitor 27,1,1299.00
+35,SSD 1TB,2,459.00
+36,Hub USB-C,1,129.90
+36,Webcam HD,2,249.50
+36,Luminária LED,3,99.90
+36,Monitor 27,2,1299.00
+37,Hub USB-C,3,129.90
+37,Fone Bluetooth,1,199.90
+37,Fone Bluetooth,3,199.90
+38,Mochila Notebook,1,179.00
+38,Mochila Notebook,1,179.00
+38,Fone Bluetooth,2,199.90
+39,SSD 1TB,2,459.00
+40,Luminária LED,3,99.90
+40,Mouse sem fio,2,89.90
+40,Mochila Notebook,2,179.00
+41,SSD 1TB,1,459.00
+41,Monitor 27,2,1299.00
+41,Teclado Mecânico,1,349.00
+41,Teclado Mecânico,3,349.00
+42,Webcam HD,1,249.50
+42,Cadeira Gamer,3,999.90
+42,Mouse sem fio,2,89.90
+43,Cadeira Gamer,3,999.90
+44,Hub USB-C,3,129.90
+44,Hub USB-C,1,129.90
+44,Teclado Mecânico,1,349.00
+44,SSD 1TB,2,459.00
+45,Fone Bluetooth,2,199.90
+45,Mouse sem fio,2,89.90
+46,Mochila Notebook,1,179.00
+46,Fone Bluetooth,3,199.90
+47,Monitor 27,1,1299.00
+47,Fone Bluetooth,3,199.90
+47,Mouse sem fio,2,89.90
+47,Monitor 27,3,1299.00
+48,Teclado Mecânico,2,349.00
+48,Fone Bluetooth,2,199.90
+48,Luminária LED,1,99.90
+48,SSD 1TB,1,459.00
+49,Monitor 27,3,1299.00
+49,Mouse sem fio,1,89.90
+50,Mouse sem fio,3,89.90
+50,SSD 1TB,3,459.00
+50,Luminária LED,1,99.90
+50,SSD 1TB,3,459.00
+51,Monitor 27,1,1299.00
+51,Teclado Mecânico,2,349.00
+51,Monitor 27,2,1299.00
+52,Hub USB-C,1,129.90
+52,Mochila Notebook,3,179.00
+52,Fone Bluetooth,2,199.90
+53,Luminária LED,3,99.90
+53,Mochila Notebook,1,179.00
+53,Hub USB-C,3,129.90
+53,Webcam HD,1,249.50
+54,Fone Bluetooth,1,199.90
+54,Webcam HD,2,249.50
+54,Monitor 27,1,1299.00
+55,Hub USB-C,3,129.90
+55,Cadeira Gamer,3,999.90
+55,Mochila Notebook,3,179.00
+55,Fone Bluetooth,2,199.90
+56,Teclado Mecânico,1,349.00
+57,Hub USB-C,3,129.90
+57,Monitor 27,3,1299.00
+57,Luminária LED,3,99.90
+57,SSD 1TB,3,459.00
+58,Mouse sem fio,2,89.90
+59,Monitor 27,3,1299.00
+60,Webcam HD,1,249.50
+60,Webcam HD,1,249.50
+61,Mouse sem fio,3,89.90
+61,Mochila Notebook,2,179.00
+62,Fone Bluetooth,1,199.90
+63,Luminária LED,1,99.90
+63,Webcam HD,3,249.50
+64,Fone Bluetooth,3,199.90
+64,Hub USB-C,1,129.90
+64,Teclado Mecânico,3,349.00
+65,Teclado Mecânico,3,349.00
+66,Fone Bluetooth,3,199.90
+67,Webcam HD,2,249.50
+67,Luminária LED,2,99.90
+67,Mochila Notebook,3,179.00
+67,Monitor 27,2,1299.00
+68,Webcam HD,1,249.50
+68,Cadeira Gamer,3,999.90
+69,Teclado Mecânico,2,349.00
+69,Fone Bluetooth,3,199.90
+69,Mochila Notebook,3,179.00
+69,Luminária LED,1,99.90
+70,Teclado Mecânico,2,349.00
+70,Teclado Mecânico,2,349.00
+70,SSD 1TB,1,459.00
+71,SSD 1TB,1,459.00
+71,Luminária LED,3,99.90
+71,Luminária LED,2,99.90
+71,Monitor 27,1,1299.00
+72,Mochila Notebook,3,179.00
+72,Cadeira Gamer,1,999.90
+72,SSD 1TB,1,459.00
+73,Teclado Mecânico,2,349.00
+73,Fone Bluetooth,2,199.90
+73,Luminária LED,2,99.90
+74,Mouse sem fio,3,89.90
+74,Teclado Mecânico,2,349.00
+74,Webcam HD,2,249.50
+75,Cadeira Gamer,3,999.90
+75,Webcam HD,3,249.50
+75,SSD 1TB,1,459.00
+75,Luminária LED,2,99.90
+76,Mouse sem fio,2,89.90
+76,Cadeira Gamer,3,999.90
+77,Mochila Notebook,3,179.00
+77,Teclado Mecânico,3,349.00
+78,Monitor 27,1,1299.00
+78,Webcam HD,3,249.50
+78,Teclado Mecânico,2,349.00
+79,Mouse sem fio,1,89.90
+79,Fone Bluetooth,3,199.90
+79,SSD 1TB,1,459.00
+79,Hub USB-C,3,129.90
+80,Monitor 27,2,1299.00
+80,Mouse sem fio,2,89.90
+81,Monitor 27,3,1299.00
+81,Cadeira Gamer,3,999.90
+81,Hub USB-C,3,129.90
+82,Mouse sem fio,1,89.90
+82,Webcam HD,2,249.50
+83,Fone Bluetooth,3,199.90
+83,Luminária LED,2,99.90
+84,Webcam HD,3,249.50
+84,Cadeira Gamer,2,999.90
+84,Luminária LED,3,99.90
+84,SSD 1TB,2,459.00
+85,Mouse sem fio,2,89.90
+86,SSD 1TB,1,459.00
+87,Teclado Mecânico,1,349.00
+88,Mochila Notebook,3,179.00
+89,Mochila Notebook,1,179.00
+90,Monitor 27,2,1299.00
+90,Fone Bluetooth,2,199.90
+90,SSD 1TB,1,459.00
+90,SSD 1TB,1,459.00
+91,SSD 1TB,3,459.00
+91,Mouse sem fio,1,89.90
+91,Hub USB-C,2,129.90
+91,Monitor 27,1,1299.00
+92,SSD 1TB,2,459.00
+92,Webcam HD,1,249.50
+92,Mouse sem fio,1,89.90
+92,Luminária LED,1,99.90
+93,Cadeira Gamer,2,999.90
+93,Mouse sem fio,1,89.90
+93,Cadeira Gamer,2,999.90
+93,Monitor 27,2,1299.00
+94,Webcam HD,1,249.50
+95,Hub USB-C,1,129.90
+96,Webcam HD,1,249.50
+96,Luminária LED,3,99.90
+96,Teclado Mecânico,2,349.00
+96,SSD 1TB,3,459.00
+97,Webcam HD,2,249.50
+97,Monitor 27,1,1299.00
+97,Mouse sem fio,3,89.90
+97,Luminária LED,2,99.90
+98,Mouse sem fio,3,89.90
+98,Webcam HD,1,249.50
+99,Mouse sem fio,3,89.90
+100,Fone Bluetooth,1,199.90
+100,Cadeira Gamer,3,999.90
+101,Teclado Mecânico,3,349.00
+101,Webcam HD,2,249.50
+101,Monitor 27,3,1299.00
+102,Luminária LED,3,99.90
+102,Teclado Mecânico,2,349.00
+103,Monitor 27,2,1299.00
+103,Mochila Notebook,2,179.00
+104,Mochila Notebook,2,179.00
+105,SSD 1TB,2,459.00
+105,Hub USB-C,2,129.90
+105,Fone Bluetooth,1,199.90
+105,Luminária LED,2,99.90
+106,Monitor 27,3,1299.00
+106,Teclado Mecânico,3,349.00
+106,Fone Bluetooth,3,199.90
+107,Cadeira Gamer,2,999.90
+107,Hub USB-C,1,129.90
+108,Teclado Mecânico,3,349.00
+108,Fone Bluetooth,1,199.90
+108,Fone Bluetooth,1,199.90
+109,Hub USB-C,1,129.90
+109,Webcam HD,1,249.50
+109,Webcam HD,2,249.50
+109,Teclado Mecânico,2,349.00
+110,Cadeira Gamer,3,999.90
+110,Cadeira Gamer,3,999.90
+111,Monitor 27,1,1299.00
+112,Monitor 27,1,1299.00
+112,Mochila Notebook,1,179.00
+112,Webcam HD,2,249.50
+112,Luminária LED,1,99.90
+113,Teclado Mecânico,1,349.00
+114,SSD 1TB,2,459.00
+114,Fone Bluetooth,1,199.90
+115,Cadeira Gamer,2,999.90
+116,Fone Bluetooth,2,199.90
+117,Cadeira Gamer,2,999.90
+118,Mouse sem fio,2,89.90
+119,Teclado Mecânico,2,349.00
+119,Hub USB-C,2,129.90
+120,Cadeira Gamer,1,999.90
+121,Luminária LED,3,99.90
+121,Webcam HD,3,249.50
+121,Fone Bluetooth,2,199.90
+122,Mouse sem fio,1,89.90
+123,Mouse sem fio,2,89.90
+123,Mouse sem fio,3,89.90
+123,Teclado Mecânico,1,349.00
+123,SSD 1TB,1,459.00
+124,Hub USB-C,2,129.90
+124,Monitor 27,3,1299.00
+125,Mochila Notebook,2,179.00
+125,Mouse sem fio,1,89.90
+125,Monitor 27,2,1299.00
+125,Monitor 27,2,1299.00
+126,Webcam HD,1,249.50
+126,Luminária LED,1,99.90
+127,Hub USB-C,3,129.90
+127,SSD 1TB,3,459.00
+127,Teclado Mecânico,1,349.00
+127,Hub USB-C,3,129.90
+128,Mouse sem fio,1,89.90
+128,SSD 1TB,3,459.00
+128,Cadeira Gamer,2,999.90
+129,Luminária LED,3,99.90
+130,Hub USB-C,1,129.90
+130,Luminária LED,1,99.90
+130,SSD 1TB,1,459.00
+130,Teclado Mecânico,1,349.00
+131,Cadeira Gamer,2,999.90
+131,Teclado Mecânico,1,349.00
+131,Mochila Notebook,3,179.00
+131,Fone Bluetooth,1,199.90
+132,Monitor 27,2,1299.00
+132,Mochila Notebook,2,179.00
+132,Webcam HD,3,249.50
+133,Fone Bluetooth,3,199.90
+134,Cadeira Gamer,2,999.90
+134,Webcam HD,2,249.50
+135,SSD 1TB,1,459.00
+135,Monitor 27,3,1299.00
+135,Monitor 27,3,1299.00
+135,Monitor 27,3,1299.00
+136,Monitor 27,1,1299.00
+136,Mochila Notebook,1,179.00
+136,Luminária LED,2,99.90
+136,Teclado Mecânico,1,349.00
+137,SSD 1TB,1,459.00
+137,Monitor 27,2,1299.00
+137,Monitor 27,2,1299.00
+137,Monitor 27,2,1299.00
+138,Cadeira Gamer,3,999.90
+138,Mochila Notebook,1,179.00
+138,Luminária LED,1,99.90
+139,Webcam HD,3,249.50
+139,Cadeira Gamer,1,999.90
+139,Teclado Mecânico,3,349.00
+139,Cadeira Gamer,2,999.90
+140,Mouse sem fio,1,89.90
+141,Cadeira Gamer,3,999.90
+141,Mouse sem fio,1,89.90
+141,Hub USB-C,3,129.90
+141,Teclado Mecânico,1,349.00
+142,Luminária LED,3,99.90
+142,Mochila Notebook,2,179.00
+142,Teclado Mecânico,2,349.00
+143,SSD 1TB,2,459.00
+143,Luminária LED,1,99.90
+143,Mochila Notebook,1,179.00
+144,Fone Bluetooth,2,199.90
+144,Mouse sem fio,1,89.90
+144,Mouse sem fio,1,89.90
+145,Fone Bluetooth,2,199.90
+145,Luminária LED,1,99.90
+146,Luminária LED,3,99.90
+146,Fone Bluetooth,1,199.90
+146,Monitor 27,2,1299.00
+146,Mochila Notebook,3,179.00
+147,Luminária LED,3,99.90
+148,Mouse sem fio,1,89.90
+149,Monitor 27,3,1299.00
+149,Hub USB-C,1,129.90
+149,Monitor 27,2,1299.00
+149,Cadeira Gamer,1,999.90
+150,Webcam HD,3,249.50
+150,SSD 1TB,1,459.00
+151,SSD 1TB,1,459.00
+151,Monitor 27,3,1299.00
+151,Cadeira Gamer,3,999.90
+152,Mouse sem fio,1,89.90
+152,Teclado Mecânico,2,349.00
+152,Cadeira Gamer,1,999.90
+152,Mochila Notebook,3,179.00
+153,Hub USB-C,3,129.90
+154,Cadeira Gamer,3,999.90
+155,Cadeira Gamer,1,999.90
+156,Mouse sem fio,1,89.90
+156,Fone Bluetooth,2,199.90
+157,Cadeira Gamer,3,999.90
+157,Mouse sem fio,3,89.90
+158,Webcam HD,1,249.50
+159,Luminária LED,1,99.90
+159,Monitor 27,1,1299.00
+159,Luminária LED,2,99.90
+159,Hub USB-C,1,129.90
+160,SSD 1TB,3,459.00
+160,Monitor 27,3,1299.00
+161,Teclado Mecânico,1,349.00
+161,Luminária LED,2,99.90
+161,Mouse sem fio,3,89.90
+161,Cadeira Gamer,1,999.90
+162,Mouse sem fio,2,89.90
+163,SSD 1TB,3,459.00
+163,Mouse sem fio,1,89.90
+164,Webcam HD,1,249.50
+164,SSD 1TB,1,459.00
+164,Webcam HD,1,249.50
+165,Cadeira Gamer,2,999.90
+165,Mochila Notebook,2,179.00
+165,SSD 1TB,2,459.00
+165,Mouse sem fio,3,89.90
+166,Fone Bluetooth,2,199.90
+166,Luminária LED,3,99.90
+166,Luminária LED,2,99.90
+167,Teclado Mecânico,3,349.00
+167,Fone Bluetooth,2,199.90
+167,Fone Bluetooth,3,199.90
+168,Fone Bluetooth,1,199.90
+169,Teclado Mecânico,2,349.00
+169,Mouse sem fio,3,89.90
+169,Webcam HD,3,249.50
+170,Luminária LED,2,99.90
+170,Mochila Notebook,1,179.00
+170,Cadeira Gamer,3,999.90
+171,Webcam HD,3,249.50
+171,Teclado Mecânico,1,349.00
+171,Luminária LED,2,99.90
+172,Luminária LED,2,99.90
+172,Teclado Mecânico,2,349.00
+172,Cadeira Gamer,3,999.90
+172,Mochila Notebook,1,179.00
+173,Fone Bluetooth,1,199.90
+173,Fone Bluetooth,3,199.90
+173,Monitor 27,3,1299.00
+173,Mochila Notebook,2,179.00
+174,Fone Bluetooth,3,199.90
+174,Mochila Notebook,2,179.00
+175,Mochila Notebook,3,179.00
+175,Mouse sem fio,1,89.90
+175,Cadeira Gamer,2,999.90
+176,Hub USB-C,3,129.90
+176,Luminária LED,1,99.90
+176,Mochila Notebook,1,179.00
+176,SSD 1TB,2,459.00
+177,Cadeira Gamer,3,999.90
+178,Webcam HD,1,249.50
+178,Luminária LED,3,99.90
+178,Cadeira Gamer,1,999.90
+179,Hub USB-C,1,129.90
+180,Mouse sem fio,2,89.90
+180,Hub USB-C,3,129.90
+180,Teclado Mecânico,2,349.00
+180,Hub USB-C,1,129.90
+181,Webcam HD,1,249.50
+181,Luminária LED,1,99.90
+182,Hub USB-C,2,129.90
+182,Teclado Mecânico,1,349.00
+182,Webcam HD,1,249.50
+183,Mochila Notebook,2,179.00
+183,Fone Bluetooth,2,199.90
+183,Cadeira Gamer,1,999.90
+183,SSD 1TB,1,459.00
+184,Webcam HD,1,249.50
+184,Monitor 27,1,1299.00
+184,Hub USB-C,2,129.90
+185,Teclado Mecânico,1,349.00
+186,Luminária LED,1,99.90
+186,Fone Bluetooth,3,199.90
+186,Webcam HD,1,249.50
+187,Hub USB-C,2,129.90
+188,Teclado Mecânico,2,349.00
+188,Mochila Notebook,2,179.00
+188,Luminária LED,3,99.90
+188,Webcam HD,3,249.50
+189,Teclado Mecânico,1,349.00
+190,Teclado Mecânico,3,349.00
+190,Mouse sem fio,3,89.90
+190,Mouse sem fio,2,89.90
+191,Fone Bluetooth,2,199.90
+191,Webcam HD,3,249.50
+191,Fone Bluetooth,3,199.90
+191,Webcam HD,1,249.50
+192,Monitor 27,3,1299.00
+193,Mochila Notebook,1,179.00
+193,Webcam HD,2,249.50
+193,Teclado Mecânico,2,349.00
+194,Luminária LED,2,99.90
+195,Webcam HD,3,249.50
+195,Mochila Notebook,2,179.00
+195,Luminária LED,1,99.90
+195,Cadeira Gamer,2,999.90
+196,Mochila Notebook,2,179.00
+196,Mouse sem fio,1,89.90
+196,Monitor 27,3,1299.00
+197,Mouse sem fio,2,89.90
+198,Mochila Notebook,3,179.00
+198,Hub USB-C,2,129.90
+198,Teclado Mecânico,2,349.00
+198,Hub USB-C,2,129.90
+199,Cadeira Gamer,2,999.90
+199,SSD 1TB,1,459.00
+200,Mouse sem fio,3,89.90
+200,Hub USB-C,3,129.90
+200,Cadeira Gamer,3,999.90
+201,Mouse sem fio,1,89.90
+201,Hub USB-C,1,129.90
+201,Luminária LED,3,99.90
+202,Hub USB-C,2,129.90
+202,Monitor 27,2,1299.00
+203,Mouse sem fio,3,89.90
+203,Luminária LED,3,99.90
+204,Fone Bluetooth,2,199.90
+204,Cadeira Gamer,2,999.90
+204,Monitor 27,2,1299.00
+204,SSD 1TB,2,459.00
+205,Teclado Mecânico,1,349.00
+205,Mochila Notebook,3,179.00
+205,SSD 1TB,1,459.00
+206,Teclado Mecânico,3,349.00
+207,Fone Bluetooth,2,199.90
+207,Fone Bluetooth,2,199.90
+207,Mochila Notebook,1,179.00
+207,Mochila Notebook,3,179.00
+208,Mouse sem fio,2,89.90
+208,Teclado Mecânico,1,349.00
+209,SSD 1TB,1,459.00
+209,Luminária LED,1,99.90
+210,Cadeira Gamer,2,999.90
+210,Mouse sem fio,1,89.90
+211,Webcam HD,3,249.50
+211,Mouse sem fio,3,89.90
+211,Mochila Notebook,3,179.00
+212,Cadeira Gamer,2,999.90
+212,Mouse sem fio,1,89.90
+212,Teclado Mecânico,1,349.00
+212,Luminária LED,1,99.90
+213,Monitor 27,1,1299.00
+213,Mochila Notebook,1,179.00
+214,Mouse sem fio,1,89.90
+215,SSD 1TB,2,459.00
+216,Monitor 27,1,1299.00
+216,Mochila Notebook,3,179.00
+216,Monitor 27,3,1299.00
+217,SSD 1TB,3,459.00
+217,Cadeira Gamer,1,999.90
+218,Hub USB-C,1,129.90
+219,Mochila Notebook,3,179.00
+219,Fone Bluetooth,1,199.90
+219,Mochila Notebook,2,179.00
+219,Mouse sem fio,1,89.90
+220,Teclado Mecânico,2,349.00
+220,Mouse sem fio,3,89.90
+220,Mochila Notebook,3,179.00
+221,Hub USB-C,2,129.90
+221,Fone Bluetooth,1,199.90
+221,Mochila Notebook,3,179.00
+221,Teclado Mecânico,2,349.00
+222,Hub USB-C,3,129.90
+222,Webcam HD,1,249.50
+222,Luminária LED,3,99.90
+223,SSD 1TB,1,459.00
+223,Cadeira Gamer,3,999.90
+224,Fone Bluetooth,1,199.90
+224,Teclado Mecânico,1,349.00
+224,Mochila Notebook,2,179.00
+224,Monitor 27,2,1299.00
+225,Monitor 27,1,1299.00
+225,Luminária LED,1,99.90
+226,Webcam HD,3,249.50
+227,SSD 1TB,3,459.00
+228,Mochila Notebook,3,179.00
+228,SSD 1TB,1,459.00
+228,Mochila Notebook,1,179.00
+228,Cadeira Gamer,2,999.90
+229,SSD 1TB,3,459.00
+229,Webcam HD,2,249.50
+230,SSD 1TB,2,459.00
+230,SSD 1TB,2,459.00
+230,Mouse sem fio,3,89.90
+231,Mochila Notebook,3,179.00
+231,Monitor 27,3,1299.00
+232,Luminária LED,1,99.90
+233,Mochila Notebook,3,179.00
+233,Cadeira Gamer,3,999.90
+233,Teclado Mecânico,2,349.00
+233,Webcam HD,2,249.50
+234,Webcam HD,3,249.50
+235,Mouse sem fio,3,89.90
+235,Mouse sem fio,1,89.90
+236,Fone Bluetooth,3,199.90
+236,Mouse sem fio,3,89.90
+237,Cadeira Gamer,3,999.90
+237,Webcam HD,2,249.50
+237,Hub USB-C,2,129.90
+238,Teclado Mecânico,2,349.00
+239,Fone Bluetooth,3,199.90
+239,SSD 1TB,1,459.00
+239,SSD 1TB,2,459.00
+240,Monitor 27,1,1299.00
+241,Hub USB-C,1,129.90
+241,Webcam HD,1,249.50
+241,Mouse sem fio,3,89.90
+242,Monitor 27,1,1299.00
+243,Webcam HD,1,249.50
+243,Luminária LED,3,99.90
+243,Fone Bluetooth,2,199.90
+244,Cadeira Gamer,3,999.90
+245,Teclado Mecânico,1,349.00
+245,Fone Bluetooth,1,199.90
+246,Webcam HD,3,249.50
+246,Monitor 27,1,1299.00
+247,Fone Bluetooth,2,199.90
+247,Webcam HD,1,249.50
+247,Cadeira Gamer,2,999.90
+248,Fone Bluetooth,1,199.90
+248,Fone Bluetooth,3,199.90
+248,Webcam HD,2,249.50
+249,Teclado Mecânico,3,349.00
+250,Teclado Mecânico,2,349.00
+250,Teclado Mecânico,2,349.00
+250,Luminária LED,3,99.90
+251,Mouse sem fio,2,89.90
+251,Webcam HD,1,249.50
+251,Hub USB-C,1,129.90
+252,Hub USB-C,2,129.90
+252,Monitor 27,3,1299.00
+252,Cadeira Gamer,1,999.90
+253,Mochila Notebook,3,179.00
+253,Mochila Notebook,3,179.00
+253,Webcam HD,2,249.50
+253,Monitor 27,2,1299.00
+254,Teclado Mecânico,3,349.00
+255,Mochila Notebook,2,179.00
+255,Cadeira Gamer,3,999.90
+255,Cadeira Gamer,3,999.90
+255,Mochila Notebook,3,179.00
+256,Webcam HD,3,249.50
+256,Teclado Mecânico,2,349.00
+257,Mochila Notebook,2,179.00
+257,Mouse sem fio,1,89.90
+257,Monitor 27,2,1299.00
+258,Fone Bluetooth,1,199.90
+258,Mouse sem fio,3,89.90
+258,Luminária LED,3,99.90
+258,SSD 1TB,2,459.00
+259,Monitor 27,1,1299.00
+259,Mochila Notebook,2,179.00
+259,Mouse sem fio,1,89.90
+260,Fone Bluetooth,3,199.90
+260,SSD 1TB,2,459.00
+260,Webcam HD,1,249.50
+261,Hub USB-C,2,129.90
+261,Webcam HD,2,249.50
+262,Hub USB-C,3,129.90
+262,Luminária LED,2,99.90
+262,Monitor 27,1,1299.00
+263,Monitor 27,3,1299.00
+263,Monitor 27,3,1299.00
+263,Fone Bluetooth,1,199.90
+263,Webcam HD,3,249.50
+264,Mochila Notebook,1,179.00
+264,Hub USB-C,1,129.90
+265,Webcam HD,2,249.50
+265,Cadeira Gamer,1,999.90
+265,Hub USB-C,2,129.90
+265,Hub USB-C,1,129.90
+266,Fone Bluetooth,2,199.90
+266,SSD 1TB,2,459.00
+266,Mouse sem fio,3,89.90
+267,SSD 1TB,3,459.00
+267,Mochila Notebook,1,179.00
+267,Cadeira Gamer,2,999.90
+268,Mouse sem fio,1,89.90
+268,SSD 1TB,1,459.00
+268,Fone Bluetooth,1,199.90
+268,Teclado Mecânico,2,349.00
+269,Mochila Notebook,1,179.00
+269,Cadeira Gamer,2,999.90
+270,Webcam HD,3,249.50
+270,Luminária LED,2,99.90
+270,Mouse sem fio,2,89.90
+271,Monitor 27,2,1299.00
+271,Webcam HD,2,249.50
+272,Mochila Notebook,3,179.00
+272,Mouse sem fio,1,89.90
+272,Monitor 27,2,1299.00
+272,Webcam HD,2,249.50
+273,Fone Bluetooth,3,199.90
+274,Hub USB-C,3,129.90
+274,SSD 1TB,3,459.00
+275,Webcam HD,3,249.50
+275,Luminária LED,2,99.90
+276,Fone Bluetooth,2,199.90
+277,Luminária LED,1,99.90
+278,Luminária LED,2,99.90
+278,Fone Bluetooth,2,199.90
+278,Mochila Notebook,3,179.00
+279,Cadeira Gamer,3,999.90
+279,Cadeira Gamer,3,999.90
+279,Cadeira Gamer,3,999.90
+280,Mochila Notebook,1,179.00
+280,Fone Bluetooth,1,199.90
+280,Luminária LED,2,99.90
+281,Webcam HD,2,249.50
+281,Luminária LED,1,99.90
+282,Cadeira Gamer,1,999.90
+283,Cadeira Gamer,1,999.90
+283,Monitor 27,3,1299.00
+283,Teclado Mecânico,2,349.00
+284,Teclado Mecânico,2,349.00
+284,Teclado Mecânico,1,349.00
+285,SSD 1TB,3,459.00
+285,Luminária LED,2,99.90
+285,Mochila Notebook,1,179.00
+286,Hub USB-C,1,129.90
+286,Webcam HD,1,249.50
+287,Cadeira Gamer,1,999.90
+287,Mouse sem fio,1,89.90
+287,Mouse sem fio,1,89.90
+287,Webcam HD,2,249.50
+288,Fone Bluetooth,1,199.90
+289,Monitor 27,1,1299.00
+289,Fone Bluetooth,2,199.90
+289,SSD 1TB,2,459.00
+290,Fone Bluetooth,1,199.90
+290,Luminária LED,1,99.90
+290,Cadeira Gamer,1,999.90
+291,Webcam HD,1,249.50
+291,Cadeira Gamer,2,999.90
+292,Teclado Mecânico,1,349.00
+292,Luminária LED,3,99.90
+292,SSD 1TB,3,459.00
+293,Fone Bluetooth,3,199.90
+293,Fone Bluetooth,1,199.90
+293,Teclado Mecânico,2,349.00
+294,Teclado Mecânico,1,349.00
+294,Luminária LED,2,99.90
+294,Monitor 27,2,1299.00
+295,Luminária LED,3,99.90
+295,Webcam HD,1,249.50
+295,Webcam HD,1,249.50
+296,Hub USB-C,1,129.90
+296,Mouse sem fio,2,89.90
+296,Mochila Notebook,3,179.00
+296,Hub USB-C,3,129.90
+297,Monitor 27,3,1299.00
+298,Monitor 27,3,1299.00
+298,SSD 1TB,3,459.00
+299,Hub USB-C,2,129.90
+300,Mouse sem fio,2,89.90
+300,Monitor 27,3,1299.00
+300,Fone Bluetooth,1,199.90

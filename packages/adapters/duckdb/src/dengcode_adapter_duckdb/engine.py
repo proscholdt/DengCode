@@ -67,6 +67,10 @@ class DuckDBQueryEngine:
             Path(database).parent.mkdir(parents=True, exist_ok=True)
         try:
             conn = duckdb.connect(database, read_only=bool(cfg.get("read_only", False)))
+            if ctx.project_dir is not None:
+                # caminhos relativos em read_csv('dados/x.csv') partem do projeto, não do cwd
+                search = str(ctx.project_dir.resolve()).replace("'", "''")
+                conn.execute(f"SET GLOBAL file_search_path = '{search}'")
         except duckdb.Error as exc:
             raise map_error(exc) from exc
         return cls(conn, database=database)

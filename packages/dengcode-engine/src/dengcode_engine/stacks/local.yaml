@@ -1,7 +1,7 @@
-# Preset local — roda na máquina sem Docker: arquivos do projeto + LLM local (Ollama).
+# Preset local — roda na máquina sem Docker: arquivos do projeto + DuckDB + LLM local (Ollama).
 # Troque o LLM sem editar o arquivo: `dengcode chat --llm anthropic` ou `--llm openai:gpt-5`.
 name: local
-description: Disco local + Ollama (sem Docker, sem nuvem)
+description: Disco local + DuckDB + Ollama (sem Docker, sem nuvem)
 
 llm:
   provider: ollama
@@ -10,6 +10,10 @@ llm:
     fast: "qwen2.5:3b"
 
 storage: { adapter: local_fs, root: "." }
+compute:
+  # arquivo no projeto: tabelas criadas pelo agente persistem entre sessões
+  - { adapter: duckdb, database: ".dengcode/local.duckdb" }
+catalog: { adapter: duckdb }
 memory:  { adapter: sqlite }
 
 environments:

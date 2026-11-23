@@ -26,6 +26,34 @@ from dengcode_core.events import (
 )
 
 MAX_PREVIEW_LINES = 80
+DATA_TOOLS = {
+    "query_run",
+    "storage_sample",
+    "catalog_describe",
+    "catalog_column_stats",
+    "catalog_list_tables",
+    "storage_schema",
+    "storage_list",
+}
+DATA_LINES = 40
+
+
+def sql_card(req: ApprovalRequested) -> Text:
+    """Card de aprovação de SQL: tipo, tabelas, custo e avisos."""
+    d = req.details
+    body = Text()
+    body.append(f"{str(d.get('sql_kind', '?')).upper()}", style="bold")
+    nl = "\n"
+    body.append(f" · motor {d.get('engine', '?')} · {d.get('statements', 1)} instrução(ões){nl}")
+    if d.get("tables_read"):
+        body.append(f"lê: {', '.join(d['tables_read'])}{nl}")
+    if d.get("tables_written"):
+        body.append(f"escreve: {', '.join(d['tables_written'])}{nl}", style="magenta")
+    body.append(f"custo: {d.get('cost', 'sem estimativa')}{nl}")
+    if d.get("parse_error"):
+        body.append(f"⚠ SQL não reconhecido: {d['parse_error']}{nl}", style="bold yellow")
+    body.append(req.reason)
+    return body
 
 
 def short_args(args: dict[str, Any], limit: int = 100) -> str:
@@ -69,8 +97,15 @@ class ChatRenderer:
         elif isinstance(event, ToolCallFinished):
             self._break()
             mark, style = ("✗", "red") if event.is_error else ("✓", "green")
-            first = (event.content.strip().splitlines() or [""])[0][:120]
-            self.console.print(Text(f"  {mark} {event.name}: {first}", style=style))
+            lines = event.content.strip().splitlines() or [""]
+            if event.name in DATA_TOOLS and not event.is_error:
+                self.console.print(Text(f"  {mark} {event.name}", style=style))
+                shown = lines[:DATA_LINES]
+                if len(lines) > DATA_LINES:
+                    shown.append(f"… [{len(lines) - DATA_LINES} linhas]")
+                self.console.print(Text("\n".join(shown), style="dim"))
+            else:
+                self.console.print(Text(f"  {mark} {event.name}: {lines[0][:120]}", style=style))
         elif isinstance(event, UsageUpdated):
             self.total_cost = event.total_cost_usd
             self.total_in = event.total_input_tokens
@@ -110,12 +145,16 @@ class InteractiveApprover:
     async def __call__(self, req: ApprovalRequested) -> ApprovalAnswer:
         self.console.print()
         title = f"Aprovação: {req.name} · risco {req.risk}"
-        body = Text(req.reason)
+        body = sql_card(req) if req.preview_kind == "sql" else Text(req.reason)
         warnings = [str(w) for w in req.details.get("warnings", [])]
         for w in warnings:
             body.append(f"\n⚠ {w}", style="bold yellow")
         self.console.print(Panel(body, title=title, border_style="yellow"))
         render_preview(self.console, req.preview_kind, req.preview)
+        plan = str(req.details.get("plan") or "")
+        if plan:
+            self.console.print(Text("plano (EXPLAIN):", style="bold"))
+            self.console.print(Text("\n".join(plan.splitlines()[:15]), style="dim"))
         while True:
             raw = await asyncio.to_thread(
                 self._ask, r"[bold]Aprovar?[/bold] \[s]im / \[n]ão / sempre nesta sessão \[t]: "

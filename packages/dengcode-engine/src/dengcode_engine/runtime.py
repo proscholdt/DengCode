@@ -11,7 +11,9 @@ from pathlib import Path
 from typing import Any
 
 from dengcode_core.agent.loop import Agent, Approver, Budget, ModelRoles, deny_all
+from dengcode_core.audit import AuditLog
 from dengcode_core.checkpoints import CheckpointStore
+from dengcode_core.data.results import ResultStore
 from dengcode_core.errors import ConfigError
 from dengcode_core.events import EventBus, ProviderFallback
 from dengcode_core.llm.fallback import FallbackLLM
@@ -22,14 +24,17 @@ from dengcode_core.policy.permission import (
     PermissionPolicy,
 )
 from dengcode_core.ports.models import AdapterContext, PortKind
+from dengcode_core.privacy.pii import PiiMasker
 from dengcode_core.prompts.render import render_system_prompt
 from dengcode_core.session import Session, SessionMeta, SessionStore
+from dengcode_core.sql.cost import CostLimit
 from dengcode_core.tools.base import Tool, ToolContext
 from dengcode_core.tools.builtin import builtin_tools
+from dengcode_core.tools.data import DataServices, data_tools
 from dengcode_core.tools.registry import ToolRegistry
 from dengcode_engine.config.credentials import resolve_value
 from dengcode_engine.config.loader import StackLoader
-from dengcode_engine.config.schema import PLACEHOLDER_MARK, LLMConfig, StackConfig
+from dengcode_engine.config.schema import PLACEHOLDER_MARK, AdapterRef, LLMConfig, StackConfig
 from dengcode_engine.paths import dengcode_home, sessions_dir, workspace_dir
 from dengcode_engine.registry import AdapterRegistry
 
@@ -56,6 +61,7 @@ class Runtime:
     options: RuntimeOptions
     registry: AdapterRegistry
     store: SessionStore
+    data: DataServices
     adapters: dict[str, Any] = field(default_factory=lambda: dict[str, Any]())
 
     @property
@@ -127,6 +133,66 @@ def build_llm(
     return FallbackLLM(primary, backup, mapping, on_fallback), roles
 
 
+def create_adapter(
+    registry: AdapterRegistry, port: PortKind, ref: AdapterRef, ctx: AdapterContext
+) -> Any:
+    return registry.create(port, ref.adapter, resolve_value(ref.adapter_config()), ctx)
+
+
+def build_data_services(
+    stack: StackConfig,
+    registry: AdapterRegistry,
+    ctx: AdapterContext,
+    *,
+    env: str,
+    home: Path,
+    masker: PiiMasker,
+) -> DataServices:
+    """Constrói compute → storage → catálogo (o catálogo pode reusar o motor via peers)."""
+    engines: dict[str, Any] = {}
+    metered: dict[str, bool] = {}
+    for ref in stack.compute:
+        key = ref.adapter if ref.adapter not in engines else f"{ref.adapter}_{len(engines)}"
+        engines[key] = create_adapter(registry, PortKind.QUERY_ENGINE, ref, ctx)
+        metered[key] = bool((ref.model_extra or {}).get("metered", False))
+    peers: dict[str, Any] = {}
+    if engines:
+        peers["query_engine"] = next(iter(engines.values()))
+    pctx = AdapterContext(
+        workspace=ctx.workspace,
+        env=ctx.env,
+        secrets=ctx.secrets,
+        logger=ctx.logger,
+        cache_dir=ctx.cache_dir,
+        project_dir=ctx.project_dir,
+        peers=peers,
+    )
+    storage = (
+        create_adapter(registry, PortKind.STORAGE, stack.storage, pctx) if stack.storage else None
+    )
+    catalog = (
+        create_adapter(registry, PortKind.CATALOG, stack.catalog, pctx) if stack.catalog else None
+    )
+    env_cfg = stack.environment(env)
+    limit = None
+    if env_cfg.cost_limit is not None:
+        limit = CostLimit(usd=env_cfg.cost_limit.usd, bytes=env_cfg.cost_limit.bytes)
+    ws_dir = workspace_dir(ctx.workspace, home)
+    return DataServices(
+        engines=engines,
+        catalog=catalog,
+        storage=storage,
+        results=ResultStore(ws_dir / "cache"),
+        masker=masker,
+        audit=AuditLog(ws_dir / "audit.db"),
+        workspace=ctx.workspace,
+        stack=stack.name,
+        env=env,
+        cost_limit=limit,
+        metered=metered,
+    )
+
+
 def build_policy(stack: StackConfig, env: str, mode: str | None) -> PermissionPolicy:
     env_cfg = stack.environment(env)
     chosen = PermissionMode(mode or env_cfg.permission_mode)
@@ -165,6 +231,8 @@ def build_runtime(
     )
     llm, roles = build_llm(stack, registry, ctx, override=opts.llm, bus=bus)
     policy = build_policy(stack, opts.env, opts.mode)
+    masker = PiiMasker()
+    data = build_data_services(stack, registry, ctx, env=opts.env, home=home, masker=masker)
 
     store = SessionStore(sessions_dir(opts.workspace, home))
     if opts.session_id:
@@ -178,7 +246,7 @@ def build_runtime(
                 env=opts.env,
             )
         )
-    tools = ToolRegistry([*builtin_tools(), *(extra_tools or [])])
+    tools = ToolRegistry([*builtin_tools(), *data_tools(data), *(extra_tools or [])])
     tool_ctx = ToolContext(
         workspace_root=project_dir,
         session_id=session.id,
@@ -205,6 +273,7 @@ def build_runtime(
         bus=bus,
         budget=Budget(max_steps=opts.max_steps, max_usd=opts.max_usd),
         store=store,
+        masker=masker,
     )
     return Runtime(
         agent=agent,
@@ -212,5 +281,6 @@ def build_runtime(
         options=opts,
         registry=registry,
         store=store,
+        data=data,
         adapters={"llm": llm},
     )

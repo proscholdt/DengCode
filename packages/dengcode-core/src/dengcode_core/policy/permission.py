@@ -160,5 +160,44 @@ class PermissionPolicy:
                 return PolicyDecision(Decision.ALLOW, "modo auto em dev")
             return self._ask(request, "escrita remota")
 
-        # Risk.SQL é decidido por decide_sql (fase 3); por segurança, pergunta.
+        if risk is Risk.SQL:
+            return self._decide_sql(request)
         return self._ask(request, f"ação de risco {risk.value}")
+
+    def _is_protected(self, table: str) -> bool:
+        name = table.lower()
+        return any(
+            name == p.lower() or name.endswith("." + p.lower()) for p in self.protected_tables
+        )
+
+    def _decide_sql(self, request: ActionRequest) -> PolicyDecision:
+        """Tabela de sqlguard.md: READ livre; escrita pergunta em dev e é negada em prod."""
+        d = request.details
+        kind = str(d.get("sql_kind", "unknown"))
+        dangerous: list[str] = list(d.get("dangerous") or [])
+        written: list[str] = list(d.get("tables_written") or [])
+        cost_reason = d.get("cost_reason")
+
+        if kind == "read":
+            if cost_reason:
+                return self._ask(request, f"leitura com custo: {cost_reason}")
+            return PolicyDecision(Decision.ALLOW, "leitura")
+
+        protected = [t for t in written if self._is_protected(t)]
+        if protected:
+            return PolicyDecision(Decision.DENY, f"tabela protegida: {', '.join(protected)}")
+        if self.mode is PermissionMode.READ_ONLY:
+            return PolicyDecision(Decision.DENY, f"sessão somente leitura ({kind.upper()})")
+        if self.is_prod:
+            if dangerous:
+                return PolicyDecision(Decision.DENY, f"em prod: {', '.join(dangerous)}")
+            if kind == "dml" and self.allow_prod_writes:
+                return self._ask(request, "DML em prod (allow_prod_writes)", "ambiente de PRODUÇÃO")
+            return PolicyDecision(Decision.DENY, f"{kind.upper()} bloqueado em prod")
+        if dangerous:
+            return self._ask(request, f"{kind.upper()} em dev", *dangerous)
+        if cost_reason:
+            return self._ask(request, f"{kind.upper()} com custo: {cost_reason}")
+        if kind == "dml" and self.mode is PermissionMode.AUTO:
+            return PolicyDecision(Decision.ALLOW, "DML em dev no modo auto")
+        return self._ask(request, f"{kind.upper()} em dev")

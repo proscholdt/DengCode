@@ -1,0 +1,328 @@
+id_pedido,id_cliente,data_pedido,status,valor_total,canal
+1,35,2026-09-24,entregue,2179.60,app
+1,35,2026-09-24,entregue,2179.60,app
+2,23,2026-09-08,Entregue,1299.00,loja
+3,42,2026-09-02,cancelado,827.90,site
+4,27,2026-11-12,Entregue,716.00,site
+5,30,04/11/2026,ENTREGUE,926.70,app
+5,30,04/11/2026,ENTREGUE,926.70,app
+6,24,2026-09-11,cancelado,249.50,loja
+7,55,2026-09-25,Entregue,1235.00,site
+8,23,2026-10-10,enviado,1498.80,loja
+9,40,2026-10-13,ENTREGUE,4446.20,marketplace
+10,46,2026-09-27,pendente,948.30,marketplace
+10,46,2026-09-27,pendente,948.30,marketplace
+11,40,2026-09-19,Entregue,918.00,marketplace
+12,47,17/10/2026,cancelado,1377.00,marketplace
+13,58,2026-11-12,ENTREGUE,1377.00,app
+14,42,2026-09-16,enviado, 89.90 ,loja
+15,11,14/11/2026,ENTREGUE,3917.70,marketplace
+15,11,14/11/2026,ENTREGUE,3917.70,marketplace
+16,48,06/09/2026,entregue,2464.00,site
+17,44,12/10/2026,cancelado,638.80,loja
+18,47,2026-10-05,pendente,1745.00,site
+19,38,01/11/2026,pendente,537.00,marketplace
+20,9,2026-10-16,cancelado,1799.40,marketplace
+21,12,17/10/2026,cancelado,2047.50,loja
+22,2,2026-10-05,Entregue,1798.00,site
+22,2,2026-10-05,Entregue,1798.00,site
+23,41,2026-10-24,ENTREGUE, 129.90 ,site
+23,41,2026-10-24,ENTREGUE, 129.90 ,site
+24,59,2026-11-02,ENTREGUE,2554.00,marketplace
+25,58,2026-11-11,enviado,806.70,site
+26,23,2026-10-19,Entregue,3599.40,app
+27,50,04/11/2026,cancelado,2469.40,app
+28,41,2026-09-17,ENTREGUE,2598.00,loja
+29,15,2026-11-03,pendente,1435.70,site
+30,30,2026-10-27,enviado,259.80,marketplace
+30,30,2026-10-27,enviado,259.80,marketplace
+31,34,2026-11-08,entregue,2519.40,marketplace
+32,7,2026-09-15,enviado,2057.70,app
+33,20,14/11/2026,ENTREGUE,1008.60,site
+34,48,2026-10-09,enviado,1299.00,site
+35,26,2026-10-11,Entregue,918.00,app
+35,26,2026-10-11,Entregue,918.00,app
+36,3,2026-11-17,cancelado,3526.60,site
+37,5,2026-10-20,entregue,1189.30,marketplace
+38,12,2026-11-09,pendente,757.80,marketplace
+39,33,2026-11-06,entregue,918.00,marketplace
+40,20,2026-11-08,Entregue,837.50,loja
+41,51,2026-10-14,entregue,4453.00,loja
+42,48,2026-09-05,Entregue,3429.00,marketplace
+43,3,17/10/2026,entregue,2999.70,site
+44,41,2026-10-10,enviado,1786.60,app
+45,1,2026-10-01,pendente,579.60,marketplace
+46,20,06/11/2026,entregue,778.70,marketplace
+46,20,06/11/2026,entregue,778.70,marketplace
+47,2,2026-10-13,entregue, 5975.50 ,app
+48,26,2026-09-07,enviado,1656.70,marketplace
+49,29,2026-10-06,ENTREGUE,3986.90,app
+50,44,2026-11-04,ENTREGUE,3123.60,marketplace
+51,24,2026-09-28,enviado, 4595.00 ,marketplace
+52,42,2026-11-07,entregue,1066.70,marketplace
+53,56,18/10/2026,pendente,1117.90,loja
+54,28,2026-10-16,cancelado,1997.90,app
+55,16,2026-10-17,ENTREGUE,4326.20,marketplace
+56,60,2026-10-19,entregue,349.00,loja
+57,60,2026-10-11,entregue,5963.40,site
+58,37,2026-11-19,cancelado,179.80,loja
+59,59,10/10/2026,Entregue,3897.00,marketplace
+60,46,2026-11-08,Entregue,499.00,app
+61,45,2026-10-02,Entregue,627.70,marketplace
+62,33,2026-10-05,entregue,199.90,marketplace
+63,1,2026-10-31,enviado,848.40,app
+64,54,2026-11-14,ENTREGUE,1776.60,loja
+65,32,2026-11-18,ENTREGUE, 1047.00 ,app
+66,19,2026-09-21,entregue,599.70,marketplace
+67,31,2026-11-08,ENTREGUE,3833.80,app
+68,31,15/10/2026,entregue,3249.20,loja
+69,31,12/11/2026,entregue, 1934.60 ,app
+70,35,2026-11-18,Entregue, 1855.00 ,marketplace
+71,1,13/09/2026,cancelado,2257.50,site
+72,7,04/11/2026,enviado,1995.90,marketplace
+73,16,2026-11-09,Entregue,1297.60,site
+74,6,2026-09-29,enviado,1466.70,marketplace
+75,40,2026-09-25,Entregue,4407.00,loja
+76,51,2026-10-02,entregue,3179.50,marketplace
+77,53,2026-09-29,Entregue, 1584.00 ,loja
+78,45,05/10/2026,Entregue,2745.50,app
+79,26,2026-11-15,enviado,1538.30,app
+80,46,2026-11-20,pendente,2777.80,loja
+81,54,2026-09-30,enviado,7286.40,app
+81,54,2026-09-30,enviado,7286.40,app
+82,47,2026-11-02,entregue,588.90,marketplace
+83,53,2026-09-03,Entregue,799.50,app
+84,13,2026-11-12,pendente,3966.00,marketplace
+84,13,2026-11-12,pendente,3966.00,marketplace
+85,18,2026-10-01,entregue,179.80,loja
+86,27,2026-09-16,ENTREGUE,459.00,app
+87,35,2026-10-08,ENTREGUE,349.00,app
+88,58,2026-10-29,Entregue, 537.00 ,site
+89,39,2026-09-13,cancelado, 179.00 ,app
+90,9,2026-11-11,enviado,3915.80,site
+91,45,13/10/2026,cancelado,3025.70,loja
+92,8,2026-11-06,Entregue,1357.30,app
+93,58,2026-11-16,cancelado,6687.50,site
+94,44,2026-11-08,enviado,249.50,loja
+95,1,20/10/2026,pendente,129.90,app
+96,12,2026-10-07,Entregue, 2624.20 ,app
+97,5,2026-10-07,entregue,2267.50,site
+97,5,2026-10-07,entregue,2267.50,site
+98,12,2026-11-04,Entregue,519.20,app
+99,3,2026-10-16,entregue,269.70,site
+100,27,2026-10-18,Entregue,3199.60,app
+101,50,2026-09-24,enviado,5443.00,site
+102,34,2026-10-23,pendente,997.70,loja
+103,12,2026-10-06,Entregue,2956.00,app
+104,28,2026-10-22,entregue,358.00,app
+105,24,2026-10-26,pendente,1577.50,site
+106,16,2026-10-13,cancelado,5543.70,loja
+107,4,2026-10-18,cancelado,2129.70,loja
+108,13,2026-09-08,ENTREGUE,1446.80,marketplace
+109,4,2026-09-12,enviado,1576.40,app
+110,34,2026-09-20,cancelado,5999.40,marketplace
+111,60,2026-10-19,entregue,1299.00,loja
+112,31,2026-11-18,pendente,2076.90,site
+113,12,2026-09-28,Entregue,349.00,app
+114,15,2026-09-25,pendente, 1117.90 ,app
+115,60,2026-11-08,ENTREGUE,1999.80,app
+116,50,22/10/2026,cancelado,399.80,site
+117,54,2026-09-03,ENTREGUE,1999.80,marketplace
+118,11,11/11/2026,pendente,179.80,app
+119,38,11/09/2026,pendente,957.80,loja
+120,16,09/11/2026,pendente,999.90,marketplace
+121,7,2026-11-04,enviado,1448.00,marketplace
+122,14,2026-10-01,enviado,89.90,site
+123,11,2026-10-25,enviado,1257.50,app
+124,39,2026-10-14,pendente,4156.80,app
+125,55,08/09/2026,Entregue,5643.90,site
+126,39,2026-10-14,Entregue, 349.40 ,marketplace
+126,39,2026-10-14,Entregue, 349.40 ,marketplace
+127,26,2026-09-05,entregue, 2505.40 ,app
+128,8,2026-11-09,pendente,3466.70,loja
+129,42,2026-10-12,cancelado,299.70,app
+130,23,11/11/2026,entregue,1037.80,marketplace
+131,43,11/09/2026,ENTREGUE,3085.70,site
+132,39,2026-09-02,pendente,3704.50,site
+133,43,2026-10-12,entregue,599.70,marketplace
+134,4,2026-10-09,entregue,2498.80,site
+135,23,2026-10-15,entregue,12150.00,app
+136,40,2026-09-18,enviado,2026.80,site
+137,45,05/09/2026,cancelado,8253.00,site
+138,3,2026-10-20,Entregue,3278.60,loja
+139,56,2026-10-04,ENTREGUE,4795.20,marketplace
+140,45,2026-10-21,cancelado,89.90,marketplace
+141,16,2026-09-21,cancelado,3828.30,loja
+142,15,2026-11-05,ENTREGUE,1355.70,loja
+143,48,2026-11-06,ENTREGUE, 1196.90 ,marketplace
+144,20,2026-09-24,entregue,579.60,site
+145,25,2026-09-09,pendente,499.70,app
+146,5,18/09/2026,enviado,3634.60,app
+147,29,2026-09-19,enviado,299.70,marketplace
+148,15,2026-11-04,ENTREGUE,89.90,site
+149,51,09/10/2026,ENTREGUE,7624.80,loja
+150,56,2026-10-23,pendente,1207.50,site
+150,56,2026-10-23,pendente,1207.50,site
+151,39,2026-09-06,cancelado,7355.70,app
+151,39,2026-09-06,cancelado,7355.70,app
+152,39,18/09/2026,enviado,2324.80,loja
+153,12,2026-10-05,cancelado,389.70,site
+154,18,2026-09-12,cancelado,2999.70,loja
+154,18,2026-09-12,cancelado,2999.70,loja
+155,59,2026-09-05,cancelado,999.90,site
+156,34,2026-09-27,ENTREGUE,489.70,app
+157,2,2026-09-24,cancelado, 3269.40 ,app
+158,37,2026-10-14,enviado,249.50,site
+159,15,2026-10-31,Entregue,1728.60,loja
+160,26,07/10/2026,enviado,5274.00,loja
+161,4,2026-11-13,ENTREGUE,1818.40,marketplace
+162,25,2026-09-19,Entregue,179.80,marketplace
+163,12,2026-09-19,enviado,1466.90,site
+163,12,2026-09-19,enviado,1466.90,site
+164,39,2026-09-20,Entregue,958.00,loja
+165,42,24/09/2026,cancelado,3545.50,loja
+166,37,2026-09-23,cancelado,899.30,app
+167,18,2026-10-04,entregue,2046.50,marketplace
+168,7,2026-10-26,enviado,199.90,marketplace
+169,39,2026-10-16,Entregue,1716.20,marketplace
+170,45,2026-11-09,cancelado,3378.50,loja
+171,47,2026-10-06,cancelado,1297.30,app
+172,11,2026-11-12,Entregue,4076.50,marketplace
+173,29,2026-09-16,pendente,5054.60,app
+174,35,2026-11-01,ENTREGUE,957.70,site
+175,12,22/09/2026,pendente,2626.70,app
+176,53,2026-10-24,ENTREGUE,1586.60,loja
+177,56,2026-11-01,ENTREGUE,2999.70,app
+178,3,2026-10-26,ENTREGUE,1549.10,site
+179,2,2026-09-29,enviado,129.90,app
+180,1,2026-10-27,entregue,1397.40,loja
+181,57,06/11/2026,enviado,349.40,loja
+182,59,22/10/2026,enviado,858.30,app
+183,57,2026-10-08,enviado,2216.70,app
+184,42,2026-09-22,Entregue,1808.30,loja
+185,33,2026-10-17,Entregue,349.00,marketplace
+186,46,2026-11-04,entregue,949.10,site
+187,14,2026-09-01,Entregue,259.80,site
+188,53,2026-10-23,entregue, 2104.20 ,marketplace
+189,38,2026-09-15,ENTREGUE,349.00,site
+190,16,2026-09-04,ENTREGUE,1496.50,marketplace
+191,54,2026-10-12,Entregue,1997.50,loja
+192,52,2026-11-02,ENTREGUE,3897.00,loja
+193,41,2026-09-28,pendente,1376.00,marketplace
+194,28,2026-10-06,entregue,199.80,app
+195,10,2026-09-06,cancelado,3206.20,marketplace
+196,29,2026-10-18,enviado,4344.90,site
+197,30,07/09/2026,pendente,179.80,marketplace
+198,33,2026-10-26,entregue,1754.60,marketplace
+199,2,2026-09-13,entregue,2458.80,marketplace
+200,10,2026-11-05,enviado,3659.10,app
+201,10,06/10/2026,cancelado,519.50,app
+202,36,2026-09-05,ENTREGUE,2857.80,loja
+203,10,2026-10-04,ENTREGUE,569.40,app
+204,31,04/11/2026,entregue, 5915.60 ,marketplace
+205,8,2026-10-26,cancelado,1345.00,app
+206,47,2026-11-07,cancelado,1047.00,app
+207,1,17/10/2026,pendente,1515.60,loja
+208,6,2026-09-17,cancelado,528.80,app
+209,21,2026-10-14,cancelado, 558.90 ,loja
+210,6,2026-11-07,entregue,2089.70,marketplace
+211,17,2026-09-06,ENTREGUE,1555.20,app
+212,58,2026-10-10,enviado,2538.60,site
+213,12,2026-09-09,cancelado,1478.00,marketplace
+214,18,21/09/2026,ENTREGUE, 89.90 ,marketplace
+215,18,07/10/2026,pendente,918.00,marketplace
+216,38,10/11/2026,cancelado,5733.00,site
+217,21,2026-09-15,ENTREGUE,2376.90,app
+218,13,2026-11-16,cancelado,129.90,app
+219,3,03/11/2026,entregue,1184.80,app
+220,54,24/09/2026,ENTREGUE,1504.70,loja
+221,54,30/10/2026,entregue,1694.70,marketplace
+222,41,2026-11-11,entregue,938.90,app
+223,24,2026-11-10,pendente,3458.70,loja
+224,52,2026-11-11,ENTREGUE,3504.90,loja
+225,3,2026-10-19,entregue,1398.90,site
+226,59,2026-11-20,pendente,748.50,app
+227,31,2026-09-21,Entregue,1377.00,marketplace
+228,38,2026-10-17,cancelado,3174.80,loja
+229,33,2026-09-21,entregue, 1876.00 ,marketplace
+230,56,2026-11-15,Entregue,2105.70,marketplace
+230,56,2026-11-15,Entregue,2105.70,marketplace
+231,59,2026-10-06,ENTREGUE,4434.00,loja
+232,1,2026-09-22,pendente, 99.90 ,marketplace
+232,1,2026-09-22,pendente, 99.90 ,marketplace
+233,11,17/11/2026,pendente,4733.70,app
+234,44,2026-10-16,entregue,748.50,site
+234,44,2026-10-16,entregue,748.50,site
+235,53,2026-09-02,entregue,359.60,site
+236,15,2026-10-17,cancelado, 869.40 ,loja
+237,15,2026-11-20,pendente,3758.50,site
+238,15,2026-09-23,cancelado,698.00,marketplace
+239,46,2026-09-03,Entregue,1976.70,loja
+239,46,2026-09-03,Entregue,1976.70,loja
+240,22,2026-09-16,pendente,1299.00,site
+241,1,2026-10-15,pendente,649.10,site
+242,28,2026-11-19,cancelado,1299.00,site
+243,50,2026-11-07,cancelado,949.00,loja
+243,50,2026-11-07,cancelado,949.00,loja
+244,26,2026-10-26,ENTREGUE,2999.70,app
+245,49,2026-11-06,Entregue, 548.90 ,marketplace
+245,49,2026-11-06,Entregue, 548.90 ,marketplace
+246,40,13/09/2026,ENTREGUE,2047.50,app
+247,51,12/09/2026,entregue,2649.10,marketplace
+248,32,2026-09-21,entregue,1298.60,site
+249,17,2026-11-01,entregue,1047.00,site
+250,22,23/09/2026,cancelado,1695.70,site
+251,57,2026-11-02,Entregue,559.20,app
+252,15,19/11/2026,entregue,5156.70,site
+253,24,2026-10-18,Entregue,4171.00,app
+254,31,2026-09-12,ENTREGUE,1047.00,marketplace
+255,20,2026-11-10,Entregue,6894.40,marketplace
+256,40,2026-09-28,pendente, 1446.50 ,loja
+257,20,2026-09-14,Entregue,3045.90,marketplace
+258,12,2026-09-17,enviado,1687.30,app
+259,32,2026-11-20,pendente,1746.90,app
+260,24,2026-09-21,ENTREGUE,1767.20,site
+261,17,04/09/2026,ENTREGUE,758.80,loja
+261,17,04/09/2026,ENTREGUE,758.80,loja
+262,47,10/09/2026,pendente,1888.50,site
+262,47,10/09/2026,pendente,1888.50,site
+263,7,2026-11-17,entregue,8742.40,loja
+264,60,12/10/2026,entregue,308.90,app
+265,50,04/09/2026,entregue,1888.60,marketplace
+266,51,12/10/2026,pendente,1587.50,site
+267,49,2026-10-14,ENTREGUE,3555.80,loja
+268,58,2026-09-11,Entregue,1446.80,site
+269,24,2026-09-16,Entregue, 2178.80 ,app
+270,55,2026-11-11,cancelado,1128.10,site
+271,31,2026-09-24,ENTREGUE,3097.00,site
+272,49,27/10/2026,pendente,3723.90,loja
+273,11,11/10/2026,Entregue,599.70,site
+274,39,2026-11-13,enviado,1766.70,marketplace
+275,41,2026-10-08,Entregue,948.30,marketplace
+276,58,2026-10-05,pendente,399.80,site
+277,16,2026-09-09,Entregue,99.90,marketplace
+278,35,2026-11-14,cancelado,1136.60,marketplace
+279,10,2026-10-03,entregue,8999.10,site
+280,22,15/10/2026,enviado, 578.70 ,site
+281,17,2026-09-03,enviado, 598.90 ,marketplace
+282,41,2026-09-09,enviado,999.90,app
+283,53,2026-10-28,pendente,5594.90,marketplace
+283,53,2026-10-28,pendente,5594.90,marketplace
+284,19,21/09/2026,Entregue,1047.00,app
+285,26,2026-11-19,enviado,1755.80,marketplace
+286,7,2026-09-02,ENTREGUE,379.40,site
+286,7,2026-09-02,ENTREGUE,379.40,site
+287,56,2026-11-13,ENTREGUE,1678.70,loja
+288,44,2026-09-18,pendente,199.90,app
+289,2,2026-09-28,pendente,2616.80,app
+290,48,2026-11-10,cancelado,1299.70,site
+291,10,2026-11-18,ENTREGUE,2249.30,loja
+292,12,2026-10-08,pendente,2025.70,site
+293,21,2026-10-31,Entregue,1497.60,app
+294,30,2026-09-04,Entregue, 3146.80 ,site
+295,43,2026-09-27,enviado, 798.70 ,app
+296,7,2026-11-20,enviado,1236.40,loja
+297,44,14/09/2026,Entregue,3897.00,loja
+298,7,2026-09-19,Entregue,5274.00,loja
+299,15,2026-09-10,enviado,259.80,marketplace
+300,56,2026-09-27,entregue,4276.70,app

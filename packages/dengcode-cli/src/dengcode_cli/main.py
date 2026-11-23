@@ -6,6 +6,7 @@ import asyncio
 import json
 import logging
 import sys
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import typer
@@ -22,7 +23,7 @@ from dengcode_core.errors import DengCodeError
 from dengcode_core.ports.models import PortKind
 from dengcode_engine.config.credentials import load_dotenv
 from dengcode_engine.config.loader import StackLoader
-from dengcode_engine.paths import sessions_dir
+from dengcode_engine.paths import dengcode_home, sessions_dir, workspace_dir
 from dengcode_engine.registry import AdapterRegistry
 from dengcode_engine.runtime import Runtime, RuntimeOptions, build_runtime
 
@@ -48,9 +49,11 @@ app = typer.Typer(
 adapters_app = typer.Typer(help="Adapters instalados.", no_args_is_help=True)
 stack_app = typer.Typer(help="Stacks (ligação porta → adapter).", no_args_is_help=True)
 sessions_app = typer.Typer(help="Sessões salvas.", no_args_is_help=True)
+audit_app = typer.Typer(help="Auditoria de queries (append-only).", no_args_is_help=True)
 app.add_typer(adapters_app, name="adapters")
 app.add_typer(stack_app, name="stack")
 app.add_typer(sessions_app, name="sessions")
+app.add_typer(audit_app, name="audit")
 
 StackOpt = typer.Option("local", "--stack", "-s", help="Stack a usar.")
 EnvOpt = typer.Option("dev", "--env", "-e", help="Ambiente da stack (dev, prod...).")
@@ -83,6 +86,8 @@ def root(
         level=logging.DEBUG if verbose else logging.WARNING,
         format="%(levelname)s %(name)s: %(message)s",
     )
+    # o sqlglot avisa quando cai para "Command"; o SqlGuard já trata esses casos
+    logging.getLogger("sqlglot").setLevel(logging.DEBUG if verbose else logging.ERROR)
 
 
 def _fail(exc: Exception) -> typer.Exit:
@@ -193,6 +198,75 @@ def stack_validate(name: str, project: Path = DirOpt) -> None:
     if problems:
         raise typer.Exit(code=1)
     console.print(f"[green]✓ stack {name} válida[/green]")
+
+
+@stack_app.command("doctor")
+def stack_doctor(
+    name: str, env: str = EnvOpt, workspace: str = WsOpt, project: Path = DirOpt
+) -> None:
+    """Conecta em cada porta da stack e executa uma operação inofensiva."""
+    from dengcode_engine.doctor import run_doctor
+
+    project = project.resolve()
+    load_dotenv(project)
+    try:
+        stack = StackLoader(project).load(name)
+    except DengCodeError as exc:
+        raise _fail(exc) from exc
+    checks = asyncio.run(
+        run_doctor(
+            stack,
+            AdapterRegistry.discover(),
+            project_dir=project,
+            workspace=workspace,
+            env=env,
+            home=dengcode_home(),
+        )
+    )
+    table = Table(title=f"stack doctor · {name} · {env}")
+    for col in ("", "porta", "adapter", "detalhe", "ms"):
+        table.add_column(col)
+    for c in checks:
+        mark = "[green]✓[/green]" if c.ok else "[red]✗[/red]"
+        table.add_row(mark, c.port, c.adapter, c.detail, str(c.elapsed_ms))
+    console.print(table)
+    if not all(c.ok for c in checks):
+        raise typer.Exit(code=1)
+
+
+# ----------------------------------------------------------------------- auditoria
+def _parse_since(text: str) -> datetime:
+    units = {"m": 60, "h": 3600, "d": 86400}
+    if len(text) < 2 or text[-1] not in units or not text[:-1].isdigit():
+        raise typer.BadParameter("use o formato 30m, 12h ou 7d")
+    return datetime.now(UTC) - timedelta(seconds=int(text[:-1]) * units[text[-1]])
+
+
+@audit_app.command("list")
+def audit_list(
+    since: str = typer.Option("7d", "--since", help="Janela: 30m, 12h, 7d."),
+    limit: int = typer.Option(50, "--limit", help="Máximo de registros."),
+    workspace: str = WsOpt,
+) -> None:
+    """Lista as queries auditadas do workspace."""
+    from dengcode_core.audit import AuditLog
+
+    path = workspace_dir(workspace) / "audit.db"
+    if not path.exists():
+        console.print("nenhuma auditoria ainda")
+        return
+    table = Table(title=f"Auditoria · {workspace} · últimos {since}")
+    for col in ("quando", "motor", "tipo", "decisão", "linhas", "ms", "sql"):
+        table.add_column(col, overflow="fold")
+    for r in AuditLog(path).list(since=_parse_since(since), limit=limit):
+        sql = r.sql if len(r.sql) <= 90 else r.sql[:89] + "…"
+        decision = r.decision + (f" ({r.error[:40]})" if r.error else "")
+        rows = str(r.rows) if r.rows is not None else "-"
+        ms = str(r.elapsed_ms) if r.elapsed_ms is not None else "-"
+        table.add_row(
+            r.ts.strftime("%Y-%m-%d %H:%M"), r.engine or "-", r.kind or "-", decision, rows, ms, sql
+        )
+    console.print(table)
 
 
 # ----------------------------------------------------------------------- sessões

@@ -48,6 +48,7 @@ from dengcode_core.llm.messages import (
 )
 from dengcode_core.llm.port import LLMPort
 from dengcode_core.policy.permission import Decision, PermissionPolicy
+from dengcode_core.privacy.pii import PiiMasker
 from dengcode_core.session import Session, SessionStore
 from dengcode_core.tools.base import Tool, ToolArgsError, ToolContext, ToolResult
 from dengcode_core.tools.registry import ToolRegistry
@@ -125,6 +126,7 @@ class Agent:
         budget: Budget | None = None,
         context: ContextManager | None = None,
         store: SessionStore | None = None,
+        masker: PiiMasker | None = None,
     ) -> None:
         self.llm = llm
         self.models = models
@@ -138,6 +140,8 @@ class Agent:
         self.budget = budget or Budget()
         self.context = context or ContextManager()
         self.store = store
+        # PII nunca vai crua ao LLM: toda saída de ferramenta passa pelo mascarador
+        self.masker = masker or PiiMasker()
 
     # ------------------------------------------------------------------ público
     @property
@@ -302,13 +306,18 @@ class Agent:
         if call.error is not None or call.tool is None or call.args is None:
             return await self._finish(part, ToolResult(call.error or "erro", is_error=True), False)
         tool, args = call.tool, call.args
-        request = await tool.assess(args, self.ctx)
+        try:
+            request = await tool.assess(args, self.ctx)
+        except DengCodeError as exc:
+            msg = f"{type(exc).__name__}: {exc}"
+            return await self._finish(part, ToolResult(msg, is_error=True), False)
         paths = [*request.paths_read, *request.paths_written]
         inside = all(self.ctx.inside_workspace(p) for p in paths)
         verdict = self.policy.decide(request, inside=inside)
 
         if verdict.decision is Decision.DENY:
             msg = f"bloqueado pela política: {verdict.reason}"
+            await tool.on_blocked(args, request, "deny", verdict.reason)
             return await self._finish(part, ToolResult(msg, is_error=True), False)
 
         if verdict.decision is Decision.ASK:
@@ -335,6 +344,7 @@ class Agent:
                 )
             )
             if not answer.approved:
+                await tool.on_blocked(args, request, "refused", "recusado pelo usuário")
                 msg = "o usuário recusou esta ação; não tente contorná-la, pergunte como seguir"
                 return await self._finish(part, ToolResult(msg, is_error=True), False)
             if answer.remember:
@@ -356,12 +366,14 @@ class Agent:
     async def _finish(
         self, part: ToolCallPart, result: ToolResult, untrusted: bool
     ) -> ToolResultPart:
-        content = self.context.tool_output(result.content, untrusted=untrusted)
+        # PII nunca crua: nem para o LLM, nem para as interfaces
+        masked = self.masker.text(result.content)
+        content = self.context.tool_output(masked, untrusted=untrusted)
         await self.bus.publish(
             ToolCallFinished(
                 call_id=part.id,
                 name=part.name,
-                content=result.content,
+                content=masked,
                 is_error=result.is_error,
                 metadata=_jsonable(result.metadata),
             )

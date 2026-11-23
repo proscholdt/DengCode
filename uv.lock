@@ -14,6 +14,7 @@ members = [
     "dengcode-adapter-dbt",
     "dengcode-adapter-duckdb",
     "dengcode-adapter-embedding-local",
+    "dengcode-adapter-iceberg-rest",
     "dengcode-adapter-kafka",
     "dengcode-adapter-llm-anthropic",
     "dengcode-adapter-llm-ollama",
@@ -22,6 +23,7 @@ members = [
     "dengcode-adapter-memory-sqlite",
     "dengcode-adapter-minio",
     "dengcode-adapter-postgres",
+    "dengcode-adapter-trino",
     "dengcode-cli",
     "dengcode-core",
     "dengcode-engine",
@@ -688,6 +690,29 @@ requires-dist = [
 ]
 
 [[package]]
+name = "dengcode-adapter-iceberg-rest"
+version = "0.1.0"
+source = { editable = "packages/adapters/iceberg-rest" }
+dependencies = [
+    { name = "dengcode-core" },
+    { name = "httpx2" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "dengcode-testkit" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "dengcode-core", editable = "packages/dengcode-core" },
+    { name = "httpx2", specifier = ">=2.12" },
+]
+
+[package.metadata.requires-dev]
+dev = [{ name = "dengcode-testkit", editable = "packages/dengcode-testkit" }]
+
+[[package]]
 name = "dengcode-adapter-kafka"
 version = "0.1.0"
 source = { editable = "packages/adapters/kafka" }
@@ -834,6 +859,31 @@ requires-dist = [
     { name = "dengcode-core", editable = "packages/dengcode-core" },
     { name = "psycopg", extras = ["binary"], specifier = ">=3.2" },
 ]
+
+[[package]]
+name = "dengcode-adapter-trino"
+version = "0.1.0"
+source = { editable = "packages/adapters/trino" }
+dependencies = [
+    { name = "dengcode-core" },
+    { name = "httpx2" },
+    { name = "tzdata", marker = "sys_platform == 'win32'" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "dengcode-testkit" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "dengcode-core", editable = "packages/dengcode-core" },
+    { name = "httpx2", specifier = ">=2.12" },
+    { name = "tzdata", marker = "sys_platform == 'win32'", specifier = ">=2024.1" },
+]
+
+[package.metadata.requires-dev]
+dev = [{ name = "dengcode-testkit", editable = "packages/dengcode-testkit" }]
 
 [[package]]
 name = "dengcode-cli"

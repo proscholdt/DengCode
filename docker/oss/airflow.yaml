@@ -1,0 +1,50 @@
+# Airflow 3 local do DengCode (fase 5): um único container `airflow standalone`
+# (api-server + scheduler + dag-processor + triggerer) com SQLite interno.
+#
+# SOMENTE PARA DESENVOLVIMENTO. Usuário/senha fixos e públicos (admin/admin);
+# nunca use em produção nem exponha a porta para a rede.
+#
+# Uso isolado (o compose principal inclui este arquivo com `include:`):
+#   docker compose -f docker/oss/airflow.yaml up -d --wait
+#   docker compose -f docker/oss/airflow.yaml down -v
+#
+# UI e API REST: http://localhost:8081 (API estável em /api/v2; token JWT em
+# POST /auth/token com {"username": "admin", "password": "admin"}).
+#
+# Memória (medida no Docker Desktop): ~0,85 GB em repouso, ~1,05 GB executando
+# tarefas (limite de 2 GB abaixo). A primeira subida leva ~1 min (migração do banco).
+#
+# DAGs de exemplo em docker/oss/airflow/dags/ (somente leitura no container):
+#   - carga_pedidos     falha de propósito em `validar_pedidos` (qualidade de dados)
+#   - relatorio_diario  termina com sucesso
+services:
+  airflow:
+    image: ${DENGCODE_AIRFLOW_IMAGE:-apache/airflow:slim-3.3.2}
+    # O SimpleAuthManager lê (e precisa poder gravar) o arquivo de senhas;
+    # criamos o arquivo com a senha fixa de dev antes de subir o standalone.
+    entrypoint: ["/bin/bash", "-c"]
+    command:
+      - |
+        echo '{"admin": "admin"}' > "$${AIRFLOW_HOME}/simple_auth_manager_passwords.json.generated"
+        exec /entrypoint airflow standalone
+    environment:
+      # credenciais de desenvolvimento (dev-only)
+      AIRFLOW__CORE__SIMPLE_AUTH_MANAGER_USERS: "admin:admin"
+      AIRFLOW__CORE__LOAD_EXAMPLES: "false"
+      AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "false"
+      AIRFLOW__CORE__PARALLELISM: "4"
+      AIRFLOW__DAG_PROCESSOR__REFRESH_INTERVAL: "30"
+      AIRFLOW__API__WORKERS: "1"
+      AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "false"
+    ports:
+      - "${DENGCODE_AIRFLOW_PORT:-8081}:8080"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags:ro
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "--silent", "http://localhost:8080/api/v2/monitor/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+    mem_limit: 2g
+    restart: unless-stopped

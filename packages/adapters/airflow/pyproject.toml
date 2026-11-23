@@ -1,0 +1,18 @@
+[project]
+name = "dengcode-adapter-airflow"
+version = "0.1.0"
+description = "DengCode — adapter Airflow (OrchestratorPort) pela API REST estável (Airflow 2 e 3)."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+dependencies = ["dengcode-core", "httpx2>=2.12"]
+
+[project.entry-points."dengcode.adapters"]
+airflow = "dengcode_adapter_airflow.orchestrator:AirflowOrchestrator"
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dengcode_adapter_airflow"]

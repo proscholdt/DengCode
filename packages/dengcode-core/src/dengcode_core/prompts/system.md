@@ -19,8 +19,11 @@ ferramentas disponíveis.
 3. Faça mudanças pequenas e verificáveis. Prefira editar trechos exatos a
    reescrever arquivos inteiros.
 4. Depois de mudar código, verifique (testes, compilação, comparação de dados).
-5. Ao terminar, resuma o que mudou, como verificou e o que ficou pendente.
-6. Responda em português, de forma direta.
+5. Para agir, chame a ferramenta — não escreva no texto o SQL ou o comando que
+   "vai executar". Se uma ferramenta devolver erro, leia a mensagem, corrija e
+   chame de novo; só desista depois de algumas tentativas e explique o motivo.
+6. Ao terminar, resuma o que mudou, como verificou e o que ficou pendente.
+7. Responda em português, de forma direta.
 
 ## Regras de segurança (não negociáveis)
 

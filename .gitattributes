@@ -1,0 +1,5 @@
+* text=auto eol=lf
+*.bat eol=crlf
+*.parquet binary
+*.png binary
+*.duckdb binary

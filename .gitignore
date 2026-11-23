@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+dist/
+build/
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.pyright/
+.coverage
+htmlcov/
+
+# Segredos e estado local
+.env
+.env.*
+!.env.example
+.dengcode/checkpoints/
+.dengcode/cache/
+
+# dbt
+target/
+dbt_packages/
+logs/
+
+# Node / extensão
+node_modules/
+vscode-extension/out/
+vscode-extension/dist/
+*.vsix
+
+# SO / editores
+.DS_Store
+Thumbs.db
+.idea/

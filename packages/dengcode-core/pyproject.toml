@@ -1,0 +1,19 @@
+[project]
+name = "dengcode-core"
+version = "0.1.0"
+description = "DengCode — domínio puro: loop do agente, portas, política e SqlGuard (sem SDKs)."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+dependencies = [
+    "pydantic>=2.9",
+    "sqlglot>=25.0",
+    "pyarrow>=17.0",
+]
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dengcode_core"]

@@ -1,0 +1,34 @@
+# Preset Azure — tudo no ecossistema Microsoft, inclusive o LLM.
+name: azure
+description: ADLS + Databricks/Synapse + ADF + Unity Catalog + Event Hubs + Azure OpenAI
+
+llm:
+  provider: azure_openai
+  models:
+    main: "<deployment do modelo principal>"
+    fast: "<deployment do modelo barato>"
+embedding: { provider: azure_openai, model: "<deployment de embedding>" }
+
+storage:        { adapter: adls_gen2 }
+table_format:   delta
+compute:
+  - { adapter: databricks }
+  - { adapter: synapse }
+orchestrator:   { adapter: adf }
+catalog:        { adapter: unity_catalog }
+transform:      null
+streaming:      { adapter: event_hubs }
+stream_compute:
+  - { adapter: databricks_streaming }
+  - { adapter: stream_analytics }
+secrets:        { adapter: key_vault }
+memory:         { adapter: sqlite }
+
+environments:
+  dev:
+    credentials_profile: azure-dev
+    permission_mode: ask
+  prod:
+    credentials_profile: azure-prod
+    permission_mode: read_only
+    read_only: true

@@ -1,0 +1,21 @@
+# Exemplo de stack do usuário: Azure, mas com outro LLM e um ambiente de prod próprio.
+# Copie para ~/.dengcode/stacks/ ou <projeto>/.dengcode/stacks/ e ajuste.
+name: meu-trabalho-2
+extends: azure
+
+llm:
+  provider: anthropic
+  model: "<modelo>"
+  fallback: { provider: openai, model: "<modelo>" }
+
+environments:
+  dev:
+    credentials_profile: trabalho2-dev
+    permission_mode: auto
+  prod:
+    credentials_profile: trabalho2-prod
+    permission_mode: read_only
+    read_only: true
+
+policy:
+  protected_tables: ["gold.fato_vendas"]

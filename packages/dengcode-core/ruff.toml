@@ -1,0 +1,19 @@
+# Fronteira do core: nenhum SDK de nuvem, de LLM ou camada externa do DengCode.
+extend = "../../ruff.toml"
+
+[lint]
+extend-select = ["TID251"]
+
+[lint.flake8-tidy-imports.banned-api]
+"dengcode_engine".msg = "o core não depende do engine"
+"dengcode_cli".msg = "o core não depende da CLI"
+"boto3".msg = "SDK de nuvem fora do core: use um adapter"
+"botocore".msg = "SDK de nuvem fora do core: use um adapter"
+"aioboto3".msg = "SDK de nuvem fora do core: use um adapter"
+"azure".msg = "SDK de nuvem fora do core: use um adapter"
+"google.cloud".msg = "SDK de nuvem fora do core: use um adapter"
+"databricks".msg = "SDK de nuvem fora do core: use um adapter"
+"anthropic".msg = "SDK de LLM fora do core: use um adapter"
+"openai".msg = "SDK de LLM fora do core: use um adapter"
+"httpx".msg = "HTTP fora do core: use um adapter"
+"duckdb".msg = "engine de dados fora do core: use um adapter"

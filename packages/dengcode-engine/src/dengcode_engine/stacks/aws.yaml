@@ -1,0 +1,35 @@
+# Preset AWS — tudo no ecossistema AWS, inclusive o LLM.
+name: aws
+description: S3 + Athena/EMR + Airflow (MWAA) + Glue Catalog + Kinesis + Bedrock
+
+llm:
+  provider: bedrock
+  models:
+    main: "<id do modelo principal no Bedrock>"
+    fast: "<id do modelo barato no Bedrock>"
+embedding: { provider: bedrock, model: "<id do modelo de embedding>" }
+
+storage:        { adapter: s3 }
+table_format:   iceberg
+compute:
+  - { adapter: athena, metered: true }
+  - { adapter: emr_spark }
+orchestrator:   { adapter: airflow, variant: mwaa }
+catalog:        { adapter: glue_catalog }
+transform:      null
+streaming:      { adapter: kinesis }
+stream_compute:
+  - { adapter: managed_flink }
+secrets:        { adapter: secrets_manager }
+memory:         { adapter: sqlite }
+
+environments:
+  dev:
+    credentials_profile: aws-dev
+    permission_mode: ask
+    cost_limit: { usd: 5.0 }
+  prod:
+    credentials_profile: aws-prod
+    permission_mode: read_only
+    read_only: true
+    cost_limit: { usd: 2.0 }

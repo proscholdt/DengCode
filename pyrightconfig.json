@@ -1,0 +1,10 @@
+{
+  "include": ["packages"],
+  "exclude": ["**/node_modules", "**/__pycache__", "**/.venv", "**/dbt/target"],
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "standard",
+  "strict": ["packages/dengcode-core/src"],
+  "venvPath": ".",
+  "venv": ".venv",
+  "reportMissingModuleSource": false
+}

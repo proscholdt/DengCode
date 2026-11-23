@@ -1,0 +1,16 @@
+target-version = "py312"
+line-length = 100
+extend-exclude = ["vscode-extension", "examples/**/dbt/target", "examples/**/dbt/dbt_packages"]
+
+[format]
+line-ending = "lf"
+
+[lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM", "RUF", "ASYNC", "PT", "N"]
+ignore = [
+    "RUF001", "RUF002", "RUF003",  # acentos e travessões em textos em português
+    "N818",  # nomes de erro seguem a especificação (CostLimitExceeded, UnsupportedOperation)
+]
+
+[lint.isort]
+known-first-party = ["dengcode_core", "dengcode_engine", "dengcode_cli", "dengcode_testkit"]

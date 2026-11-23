@@ -76,6 +76,10 @@ class ToolContext:
         return path == root or path.is_relative_to(root)
 
 
+INVALID_JSON_KEY = "__invalid_json__"
+"""Chave que os adapters usam quando o provedor devolve argumentos que não são JSON."""
+
+
 class ToolArgsError(ValueError):
     """Argumentos inválidos vindos do modelo."""
 
@@ -97,6 +101,8 @@ class Tool[A: BaseModel](ABC):
         return ToolSpec(name=self.name, description=self.description, json_schema=schema)
 
     def parse(self, arguments: dict[str, Any]) -> A:
+        if INVALID_JSON_KEY in arguments:
+            raise ToolArgsError(f"argumentos não são JSON válido: {arguments[INVALID_JSON_KEY]}")
         try:
             return self.Args.model_validate(arguments)
         except ValidationError as exc:

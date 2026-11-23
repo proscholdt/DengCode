@@ -7,6 +7,9 @@ root_packages =
     dengcode_cli
     dengcode_testkit
     dengcode_adapter_local_fs
+    dengcode_adapter_llm_anthropic
+    dengcode_adapter_llm_openai
+    dengcode_adapter_llm_ollama
 include_external_packages = True
 
 [importlinter:contract:core-isolado]
@@ -19,6 +22,9 @@ forbidden_modules =
     dengcode_cli
     dengcode_testkit
     dengcode_adapter_local_fs
+    dengcode_adapter_llm_anthropic
+    dengcode_adapter_llm_openai
+    dengcode_adapter_llm_ollama
 
 [importlinter:contract:core-sem-sdks]
 name = core não importa SDKs de nuvem, de LLM nem engines de dados
@@ -43,6 +49,9 @@ name = adapters não importam engine nem CLI
 type = forbidden
 source_modules =
     dengcode_adapter_local_fs
+    dengcode_adapter_llm_anthropic
+    dengcode_adapter_llm_openai
+    dengcode_adapter_llm_ollama
 forbidden_modules =
     dengcode_engine
     dengcode_cli
@@ -64,3 +73,15 @@ forbidden_modules =
     dengcode_engine
     dengcode_cli
     dengcode_adapter_local_fs
+    dengcode_adapter_llm_anthropic
+    dengcode_adapter_llm_openai
+    dengcode_adapter_llm_ollama
+
+[importlinter:contract:adapters-independentes]
+name = adapters não importam uns aos outros
+type = independence
+modules =
+    dengcode_adapter_local_fs
+    dengcode_adapter_llm_anthropic
+    dengcode_adapter_llm_openai
+    dengcode_adapter_llm_ollama

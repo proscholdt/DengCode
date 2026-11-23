@@ -1,0 +1,55 @@
+# Perfis de referência (preços em US$ por milhão de tokens). Modelos e preços
+# mudam com frequência: confira a página de preços do provedor e sobrescreva na
+# stack (llm.profiles.<modelo>.<campo>). Busca por prefixo mais longo.
+# No Azure OpenAI o "modelo" é o nome do deployment: declare o perfil na stack.
+
+_base: &base
+  supports_tools: true
+  supports_parallel_tools: true
+  supports_prompt_caching: true
+  supports_vision: true
+  supports_extended_thinking: false
+
+gpt-5:
+  <<: *base
+  context_window: 400000
+  max_output_tokens: 128000
+  supports_extended_thinking: true
+  price_input_per_mtok_usd: 1.25
+  price_output_per_mtok_usd: 10.0
+
+gpt-5-mini:
+  <<: *base
+  context_window: 400000
+  max_output_tokens: 128000
+  supports_extended_thinking: true
+  price_input_per_mtok_usd: 0.25
+  price_output_per_mtok_usd: 2.0
+
+gpt-4.1:
+  <<: *base
+  context_window: 1000000
+  max_output_tokens: 32768
+  price_input_per_mtok_usd: 2.0
+  price_output_per_mtok_usd: 8.0
+
+gpt-4.1-mini:
+  <<: *base
+  context_window: 1000000
+  max_output_tokens: 32768
+  price_input_per_mtok_usd: 0.4
+  price_output_per_mtok_usd: 1.6
+
+gpt-4o:
+  <<: *base
+  context_window: 128000
+  max_output_tokens: 16384
+  price_input_per_mtok_usd: 2.5
+  price_output_per_mtok_usd: 10.0
+
+gpt-4o-mini:
+  <<: *base
+  context_window: 128000
+  max_output_tokens: 16384
+  price_input_per_mtok_usd: 0.15
+  price_output_per_mtok_usd: 0.6

@@ -9,6 +9,9 @@ dengcode-engine = { workspace = true }
 dengcode-cli = { workspace = true }
 dengcode-testkit = { workspace = true }
 dengcode-adapter-local-fs = { workspace = true }
+dengcode-adapter-llm-anthropic = { workspace = true }
+dengcode-adapter-llm-openai = { workspace = true }
+dengcode-adapter-llm-ollama = { workspace = true }
 
 [dependency-groups]
 dev = [

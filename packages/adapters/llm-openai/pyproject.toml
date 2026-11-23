@@ -1,0 +1,18 @@
+[project]
+name = "dengcode-adapter-llm-openai"
+version = "0.1.0"
+description = "DengCode — adapter openai."
+readme = "README.md"
+license = "Apache-2.0"
+requires-python = ">=3.12"
+dependencies = ["dengcode-core", "openai>=3.58", "pyyaml>=6.0"]
+
+[project.entry-points."dengcode.adapters"]
+openai = "dengcode_adapter_llm_openai.llm:OpenAILLM"
+
+[build-system]
+requires = ["hatchling>=1.25"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dengcode_adapter_llm_openai"]

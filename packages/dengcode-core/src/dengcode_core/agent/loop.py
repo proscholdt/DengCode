@@ -29,11 +29,19 @@ from dengcode_core.events import (
     ToolCallStarted,
     UsageUpdated,
 )
-from dengcode_core.llm.events import Stop, TextDelta, ToolCallEnd, ToolCallStart, Usage
+from dengcode_core.llm.events import (
+    ProviderState,
+    Stop,
+    TextDelta,
+    ToolCallEnd,
+    ToolCallStart,
+    Usage,
+)
 from dengcode_core.llm.messages import (
     ChatRequest,
     Message,
     Part,
+    ProviderStatePart,
     TextPart,
     ToolCallPart,
     ToolResultPart,
@@ -97,6 +105,7 @@ class _Call:
 class _StepOutput:
     text: str = ""
     calls: list[ToolCallPart] = field(default_factory=lambda: list[ToolCallPart]())
+    state: ProviderStatePart | None = None
     stop: str = "end"
 
 
@@ -161,11 +170,17 @@ class Agent:
                 if out.text:
                     parts.append(TextPart(text=out.text))
                 parts.extend(out.calls)
+                if out.state is not None:
+                    parts.append(out.state)
                 if parts:
                     self.session.append(Message(role="assistant", parts=parts))
                 if not out.calls:
                     reason: EndReason = "max_tokens" if out.stop == "max_tokens" else "end"
                     return await self._end(reason, final_text, steps)
+                if out.stop == "max_tokens":
+                    # argumentos podem ter sido cortados: nunca executa uma chamada truncada
+                    self._close_dangling_calls("saída truncada (max_tokens); refaça a chamada")
+                    continue
                 results = await self._execute(out.calls)
                 self.session.append(Message(role="tool", parts=list(results)))
                 self._persist()
@@ -216,6 +231,8 @@ class Agent:
                 )
             elif isinstance(ev, Usage):
                 await self._account(ev)
+            elif isinstance(ev, ProviderState):
+                out.state = ProviderStatePart(provider=ev.provider, data=ev.data)
             elif isinstance(ev, Stop):
                 out.stop = ev.reason
         out.text = "".join(text)

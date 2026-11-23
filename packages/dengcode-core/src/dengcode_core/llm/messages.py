@@ -34,7 +34,23 @@ class ToolResultPart(BaseModel):
     is_error: bool = False
 
 
-Part = Annotated[TextPart | ImagePart | ToolCallPart | ToolResultPart, Field(discriminator="type")]
+class ProviderStatePart(BaseModel):
+    """Estado opaco de um provedor para uma mensagem do assistente (ADR 0006).
+
+    Alguns provedores exigem que o turno do assistente volte *byte a byte* na
+    próxima requisição (ex.: blocos de raciocínio assinados). O adapter que o
+    produziu o reutiliza; os demais adapters e o core o ignoram.
+    """
+
+    type: Literal["provider_state"] = "provider_state"
+    provider: str
+    data: dict[str, Any]
+
+
+Part = Annotated[
+    TextPart | ImagePart | ToolCallPart | ToolResultPart | ProviderStatePart,
+    Field(discriminator="type"),
+]
 
 
 class Message(BaseModel):
@@ -53,6 +69,12 @@ class Message(BaseModel):
 
     def tool_results(self) -> list[ToolResultPart]:
         return [p for p in self.parts if isinstance(p, ToolResultPart)]
+
+    def provider_state(self, provider: str) -> dict[str, Any] | None:
+        for p in self.parts:
+            if isinstance(p, ProviderStatePart) and p.provider == provider:
+                return p.data
+        return None
 
 
 class ToolSpec(BaseModel):

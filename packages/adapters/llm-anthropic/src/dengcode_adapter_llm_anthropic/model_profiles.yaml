@@ -1,0 +1,85 @@
+# Perfis dos modelos (preços em US$ por milhão de tokens, tabela de 2026-11).
+# Campos de ModelProfile + "features" (específicos deste adapter):
+#   adaptive_thinking  envia thinking: {type: adaptive}
+#   effort             aceita output_config.effort
+#   server_fallback    aceita fallbacks: "default" (recusa → outro modelo no servidor)
+#   preserved_thinking blocos de raciocínio ligados ao prefixo: usa drop_block
+# Sobrescreva na stack: llm.profiles.<modelo>.<campo>.
+
+_current: &current
+  context_window: 1000000
+  max_output_tokens: 128000
+  supports_tools: true
+  supports_parallel_tools: true
+  supports_prompt_caching: true
+  supports_vision: true
+  supports_extended_thinking: true
+
+claude-fable-5-2:
+  <<: *current
+  price_input_per_mtok_usd: 8.0
+  price_output_per_mtok_usd: 40.0
+  features: { adaptive_thinking: true, effort: true, server_fallback: true, preserved_thinking: true }
+
+claude-fable-5-1:
+  <<: *current
+  price_input_per_mtok_usd: 10.0
+  price_output_per_mtok_usd: 50.0
+  features: { adaptive_thinking: true, effort: true, server_fallback: true, preserved_thinking: true }
+
+claude-opus-5-5:
+  <<: *current
+  price_input_per_mtok_usd: 4.0
+  price_output_per_mtok_usd: 20.0
+  features: { adaptive_thinking: true, effort: true, server_fallback: true, preserved_thinking: true }
+
+claude-opus-5:
+  <<: *current
+  price_input_per_mtok_usd: 5.0
+  price_output_per_mtok_usd: 25.0
+  features: { adaptive_thinking: true, effort: true, server_fallback: true }
+
+claude-sonnet-5-5:
+  <<: *current
+  price_input_per_mtok_usd: 2.0
+  price_output_per_mtok_usd: 10.0
+  features: { adaptive_thinking: true, effort: true, server_fallback: true, preserved_thinking: true }
+
+claude-sonnet-5:
+  <<: *current
+  price_input_per_mtok_usd: 2.0
+  price_output_per_mtok_usd: 10.0
+  features: { adaptive_thinking: true, effort: true }
+
+claude-haiku-5-5:
+  <<: *current
+  price_input_per_mtok_usd: 0.10
+  price_output_per_mtok_usd: 0.50
+  features: { adaptive_thinking: true, effort: true, preserved_thinking: true }
+
+claude-opus-4-8:
+  <<: *current
+  price_input_per_mtok_usd: 5.0
+  price_output_per_mtok_usd: 25.0
+  features: { adaptive_thinking: true, effort: true }
+
+claude-opus-4-7:
+  <<: *current
+  price_input_per_mtok_usd: 5.0
+  price_output_per_mtok_usd: 25.0
+  features: { adaptive_thinking: true, effort: true }
+
+claude-sonnet-4-6:
+  <<: *current
+  price_input_per_mtok_usd: 3.0
+  price_output_per_mtok_usd: 15.0
+  features: { adaptive_thinking: true, effort: true }
+
+claude-haiku-4-5:
+  <<: *current
+  context_window: 200000
+  max_output_tokens: 64000
+  supports_extended_thinking: false
+  price_input_per_mtok_usd: 1.0
+  price_output_per_mtok_usd: 5.0
+  features: {}

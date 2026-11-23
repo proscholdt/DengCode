@@ -1,0 +1,22 @@
+# Modelos locais (sem custo por token). A janela usada de fato é limitada por
+# `num_ctx` (padrão do adapter: 32768) para caber na memória da máquina.
+# Modelo sem suporte a ferramentas: declare supports_tools: false na stack.
+
+_base: &base
+  max_output_tokens: 8192
+  supports_tools: true
+  supports_parallel_tools: false
+  supports_prompt_caching: false
+  supports_vision: false
+  supports_extended_thinking: false
+  price_input_per_mtok_usd: 0.0
+  price_output_per_mtok_usd: 0.0
+
+qwen2.5:        { <<: *base, context_window: 32768 }
+qwen2.5-coder:  { <<: *base, context_window: 32768 }
+qwen3:          { <<: *base, context_window: 40960 }
+llama3.1:       { <<: *base, context_window: 131072 }
+llama3.2:       { <<: *base, context_window: 131072 }
+mistral-nemo:   { <<: *base, context_window: 131072 }
+gemma2:         { <<: *base, context_window: 8192, supports_tools: false }
+phi3:           { <<: *base, context_window: 4096, supports_tools: false }

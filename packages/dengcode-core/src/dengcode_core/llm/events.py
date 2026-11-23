@@ -39,12 +39,20 @@ class Usage(BaseModel):
     cached_input_tokens: int = 0
 
 
+class ProviderState(BaseModel):
+    """Estado opaco do turno (ver ``ProviderStatePart``); emitido antes de ``Stop``."""
+
+    type: Literal["provider_state"] = "provider_state"
+    provider: str
+    data: dict[str, Any]
+
+
 class Stop(BaseModel):
     type: Literal["stop"] = "stop"
     reason: StopReason
 
 
 StreamEvent = Annotated[
-    TextDelta | ToolCallStart | ToolCallDelta | ToolCallEnd | Usage | Stop,
+    TextDelta | ToolCallStart | ToolCallDelta | ToolCallEnd | Usage | ProviderState | Stop,
     Field(discriminator="type"),
 ]

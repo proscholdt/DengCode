@@ -86,21 +86,17 @@ Nenhuma exceção do psycopg atravessa a porta.
 
 ## Windows: event loop
 
-O psycopg assíncrono (verificado na 3.3.9; a checagem existe desde a 3.0) **não funciona com o `ProactorEventLoop`**, que é o
-padrão do asyncio no Windows: `connect` falha na hora. O adapter não muda a
-política global de event loop; quem roda o loop escolhe um `SelectorEventLoop`:
+O psycopg assíncrono (verificado na 3.3.9) **não funciona com o `ProactorEventLoop`**,
+o padrão do asyncio no Windows — e o resto do DengCode precisa dele (subprocessos
+do `shell_run`). Por isso o adapter resolve sozinho (`portable.py`): sob o Proactor,
+cada operação pública (que abre e fecha a própria conexão) roda inteira num
+`SelectorEventLoop` numa thread auxiliar; sob qualquer outro laço, roda direto.
+Nenhuma política global de event loop é alterada.
 
-```python
-import asyncio
-import sys
-
-loop_factory = asyncio.SelectorEventLoop if sys.platform == "win32" else None
-asyncio.run(main(), loop_factory=loop_factory)  # Python 3.12+
-```
-
-Se o loop errado for usado, o erro sai como `AdapterError` com essa instrução.
-Nos testes deste pacote, o `conftest.py` faz o mesmo pelo hook
-`pytest_asyncio_loop_factories` do pytest-asyncio.
+`cancel()` funciona nos dois casos (agenda o cancelamento no laço da consulta).
+Cancelar a *tarefa* externa não interrompe a consulta já em andamento na thread;
+o `statement_timeout` do servidor continua valendo. Os testes deste pacote rodam
+no laço padrão de propósito, para exercitar esse caminho.
 
 ## Testes
 

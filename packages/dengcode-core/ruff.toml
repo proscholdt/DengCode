@@ -16,4 +16,7 @@ extend-select = ["TID251"]
 "anthropic".msg = "SDK de LLM fora do core: use um adapter"
 "openai".msg = "SDK de LLM fora do core: use um adapter"
 "httpx".msg = "HTTP fora do core: use um adapter"
+"httpx2".msg = "HTTP fora do core: use um adapter"
+"obstore".msg = "SDK de armazenamento fora do core: use um adapter"
+"psycopg".msg = "driver de banco fora do core: use um adapter"
 "duckdb".msg = "engine de dados fora do core: use um adapter"

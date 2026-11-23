@@ -1,5 +1,6 @@
 # Regras de dependência da arquitetura hexagonal (ver CLAUDE.md e ADR 0001).
-# Ao criar um adapter novo: adicione o módulo em root_packages e nos contratos.
+# Ao criar um adapter novo: adicione o módulo em root_packages e em todos os contratos
+# que listam adapters (core-isolado, adapters-isolados, testkit-so-core, adapters-independentes).
 [importlinter]
 root_packages =
     dengcode_core
@@ -11,6 +12,8 @@ root_packages =
     dengcode_adapter_llm_openai
     dengcode_adapter_llm_ollama
     dengcode_adapter_duckdb
+    dengcode_adapter_postgres
+    dengcode_adapter_minio
 include_external_packages = True
 
 [importlinter:contract:core-isolado]
@@ -26,6 +29,9 @@ forbidden_modules =
     dengcode_adapter_llm_anthropic
     dengcode_adapter_llm_openai
     dengcode_adapter_llm_ollama
+    dengcode_adapter_duckdb
+    dengcode_adapter_postgres
+    dengcode_adapter_minio
 
 [importlinter:contract:core-sem-sdks]
 name = core não importa SDKs de nuvem, de LLM nem engines de dados
@@ -36,12 +42,14 @@ forbidden_modules =
     boto3
     botocore
     aioboto3
+    obstore
     azure
     google
     databricks
     anthropic
     openai
     httpx
+    httpx2
     duckdb
     psycopg
 
@@ -54,7 +62,8 @@ source_modules =
     dengcode_adapter_llm_openai
     dengcode_adapter_llm_ollama
     dengcode_adapter_duckdb
-    dengcode_adapter_duckdb
+    dengcode_adapter_postgres
+    dengcode_adapter_minio
 forbidden_modules =
     dengcode_engine
     dengcode_cli
@@ -79,6 +88,9 @@ forbidden_modules =
     dengcode_adapter_llm_anthropic
     dengcode_adapter_llm_openai
     dengcode_adapter_llm_ollama
+    dengcode_adapter_duckdb
+    dengcode_adapter_postgres
+    dengcode_adapter_minio
 
 [importlinter:contract:adapters-independentes]
 name = adapters não importam uns aos outros
@@ -89,3 +101,5 @@ modules =
     dengcode_adapter_llm_openai
     dengcode_adapter_llm_ollama
     dengcode_adapter_duckdb
+    dengcode_adapter_postgres
+    dengcode_adapter_minio

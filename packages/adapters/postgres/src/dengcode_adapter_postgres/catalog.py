@@ -13,6 +13,7 @@ from typing import Any, ClassVar, Literal
 from psycopg import sql as pgsql
 
 from dengcode_adapter_postgres.engine import CONNECTION_KEYS, Connection, PostgresQueryEngine, Row
+from dengcode_adapter_postgres.portable import portable
 from dengcode_core.errors import NotFoundError, UnsupportedOperation
 from dengcode_core.ports.models import (
     AdapterContext,
@@ -174,6 +175,7 @@ class PostgresCatalog:
         async with self._engine.connect(timeout_s=self._timeout_s) as conn:
             return await _rows(conn, query, params)
 
+    @portable
     async def list_schemas(self, catalog: str | None = None) -> list[str]:
         query: pgsql.SQL | pgsql.Composed = _SCHEMAS_SQL
         params: list[Any] = []
@@ -183,6 +185,7 @@ class PostgresCatalog:
         rows = await self._query(query + pgsql.SQL(" ORDER BY 1"), params)
         return [str(r[0]) for r in rows]
 
+    @portable
     async def list_tables(self, schema: str, *, catalog: str | None = None) -> list[TableRef]:
         query: pgsql.SQL | pgsql.Composed = _TABLES_SQL
         params: list[Any] = [schema]
@@ -225,6 +228,7 @@ class PostgresCatalog:
     def _table_ident(info: TableInfo) -> pgsql.Identifier:
         return pgsql.Identifier(str(info.ref.schema_), info.ref.name)
 
+    @portable
     async def describe(self, ref: TableRef) -> TableInfo:
         async with self._engine.connect(timeout_s=self._timeout_s) as conn:
             info = await self._describe(conn, ref)
@@ -235,6 +239,7 @@ class PostgresCatalog:
             )
         return info.model_copy(update={"row_count": int(count[0][0])})
 
+    @portable
     async def column_stats(
         self, ref: TableRef, columns: list[str] | None = None
     ) -> list[ColumnStats]:

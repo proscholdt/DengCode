@@ -1,31 +1,19 @@
 """Fixtures dos testes do adapter PostgreSQL.
 
-- Loop de eventos: o psycopg assíncrono não roda no ``ProactorEventLoop``
-  (padrão do asyncio no Windows), então os testes deste pacote usam um
-  ``SelectorEventLoop`` via hook do pytest-asyncio — sem mexer na política
-  global de event loop.
+- Loop de eventos: os testes rodam no laço padrão (Proactor no Windows) de
+  propósito, para exercitar ``portable.run_portable``.
 - Banco: um ``PostgresContainer`` (testcontainers) por sessão; sem Docker os
   testes de integração são pulados.
 """
 
 from __future__ import annotations
 
-import asyncio
-import sys
-from collections.abc import Callable, Iterator, Mapping
+from collections.abc import Iterator
 from typing import Any
 
 import pytest
 
 POSTGRES_IMAGE = "postgres:16-alpine"
-
-
-def pytest_asyncio_loop_factories(
-    config: pytest.Config, item: pytest.Item
-) -> Mapping[str, Callable[[], asyncio.AbstractEventLoop]]:
-    if sys.platform == "win32":
-        return {"selector": asyncio.SelectorEventLoop}
-    return {"default": asyncio.new_event_loop}
 
 
 @pytest.fixture(scope="session")

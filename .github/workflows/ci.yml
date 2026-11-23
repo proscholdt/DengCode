@@ -38,3 +38,18 @@ jobs:
         run: make lint
       - name: make test
         run: make test
+
+  integration:
+    name: integração (Docker) · ubuntu
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10.4.0
+        with:
+          enable-cache: true
+          python-version: "3.12"
+      - name: make dev
+        run: make dev
+      - name: make test-int
+        run: make test-int

@@ -28,6 +28,7 @@ from psycopg.conninfo import conninfo_to_dict, make_conninfo
 
 from dengcode_adapter_postgres.arrow import ColumnSpec, rows_to_table
 from dengcode_adapter_postgres.errors import map_error
+from dengcode_adapter_postgres.portable import portable
 from dengcode_core.errors import ConfigError, TransientError, UnsupportedOperation
 from dengcode_core.ports.models import (
     AdapterContext,
@@ -123,7 +124,7 @@ class PostgresQueryEngine:
         self._conninfo = conninfo
         self._connect_timeout_s = connect_timeout_s
         self._logger = logger or logging.getLogger("dengcode.adapter.postgres")
-        self._running: dict[str, Connection] = {}
+        self._running: dict[str, tuple[Connection, asyncio.AbstractEventLoop]] = {}
 
     def __repr__(self) -> str:  # nunca expõe o DSN (pode conter senha)
         return f"{type(self).__name__}(connect_timeout_s={self._connect_timeout_s})"
@@ -183,7 +184,7 @@ class PostgresQueryEngine:
         self, query: Query, *, max_rows: int, timeout_s: int, query_id: str
     ) -> tuple[list[ColumnSpec], list[Row], bool]:
         async with self.connect(timeout_s=timeout_s) as conn:
-            self._running[query_id] = conn
+            self._running[query_id] = (conn, asyncio.get_running_loop())
             try:
                 async with conn.cursor() as cur:
                     await cur.execute(query)
@@ -198,6 +199,7 @@ class PostgresQueryEngine:
             finally:
                 self._running.pop(query_id, None)
 
+    @portable
     async def execute(
         self, sql: str, *, max_rows: int = 10_000, timeout_s: int = 300
     ) -> QueryResult:
@@ -228,6 +230,7 @@ class PostgresQueryEngine:
             elapsed_ms=elapsed_ms,
         )
 
+    @portable
     async def explain(self, sql: str) -> str:
         query = cast(LiteralString, f"EXPLAIN {sql}")
         _, rows = await self.fetch_all(query)
@@ -237,10 +240,23 @@ class PostgresQueryEngine:
         raise UnsupportedOperation("PostgreSQL não tem dry-run com estimativa; use explain")
 
     async def cancel(self, query_id: str) -> None:
-        conn = self._running.get(query_id)
-        if conn is None:
+        entry = self._running.get(query_id)
+        if entry is None:
             return
+        conn, loop = entry
         try:
-            await conn.cancel_safe(timeout=_CANCEL_TIMEOUT_S)
+            if loop is asyncio.get_running_loop():
+                await conn.cancel_safe(timeout=_CANCEL_TIMEOUT_S)
+            else:  # a consulta roda no laço da thread auxiliar (ver portable.py)
+                future = asyncio.run_coroutine_threadsafe(
+                    conn.cancel_safe(timeout=_CANCEL_TIMEOUT_S), loop
+                )
+                try:
+                    await asyncio.wrap_future(future)
+                except asyncio.CancelledError:
+                    me = asyncio.current_task()
+                    if future.cancelled() and not (me and me.cancelling()):
+                        return  # a consulta abortou e o laço auxiliar encerrou: feito
+                    raise
         except psycopg.Error as exc:
             raise map_error(exc) from exc

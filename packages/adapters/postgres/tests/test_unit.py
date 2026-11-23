@@ -173,12 +173,34 @@ def test_proactor_error_has_hint() -> None:
     assert "SelectorEventLoop" in str(mapped)
 
 
-def test_proactor_loop_is_domain_error() -> None:
+def test_proactor_loop_runs_on_selector_thread() -> None:
+    """Sob o Proactor (padrão do Windows) a operação roda num SelectorEventLoop à parte:
+    o erro que chega é o de conexão, não o de laço incompatível."""
     if sys.platform != "win32":
         pytest.skip("só o Windows tem ProactorEventLoop")
     eng = PostgresQueryEngine("host=127.0.0.1 port=1 connect_timeout=1")
-    with pytest.raises(AdapterError, match="SelectorEventLoop"):
+    with pytest.raises(AdapterError) as info:
         asyncio.run(eng.execute("SELECT 1"), loop_factory=asyncio.ProactorEventLoop)
+    assert "SelectorEventLoop" not in str(info.value)
+
+
+def test_run_portable_uses_selector_under_proactor() -> None:
+    from dengcode_adapter_postgres.portable import run_portable
+
+    async def which_loop() -> str:
+        return type(asyncio.get_running_loop()).__name__
+
+    async def main() -> str:
+        return await run_portable(which_loop)
+
+    if sys.platform == "win32":
+        assert asyncio.run(main(), loop_factory=asyncio.ProactorEventLoop) == (
+            "_WindowsSelectorEventLoop"
+        )
+    assert asyncio.run(main(), loop_factory=asyncio.SelectorEventLoop) in (
+        "_WindowsSelectorEventLoop",
+        "_UnixSelectorEventLoop",
+    )
 
 
 # ------------------------------------------------------------------ tipos

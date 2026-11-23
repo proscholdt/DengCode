@@ -1,4 +1,5 @@
-# Stack open source local do DengCode (fase 3): Postgres + MinIO.
+# Stack open source local do DengCode: Postgres + MinIO (este arquivo) e, por include,
+# Iceberg REST + Trino, Airflow e Kafka (docker/oss/*.yaml). RAM total: ~4-5 GB.
 #
 # SOMENTE PARA DESENVOLVIMENTO. As credenciais abaixo são públicas e fixas;
 # nunca use esta stack em produção nem exponha estas portas para a rede.
@@ -8,6 +9,11 @@
 #
 # Portas e imagens podem ser trocadas por variáveis de ambiente (ver docker/README.md).
 name: dengcode-oss
+
+include:
+  - oss/trino.yaml
+  - oss/airflow.yaml
+  - oss/kafka.yaml
 
 services:
   postgres:

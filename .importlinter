@@ -19,6 +19,8 @@ root_packages =
     dengcode_adapter_memory_sqlite
     dengcode_adapter_embedding_local
     dengcode_adapter_airflow
+    dengcode_adapter_trino
+    dengcode_adapter_iceberg_rest
 include_external_packages = True
 
 [importlinter:contract:core-isolado]
@@ -42,6 +44,8 @@ forbidden_modules =
     dengcode_adapter_memory_sqlite
     dengcode_adapter_embedding_local
     dengcode_adapter_airflow
+    dengcode_adapter_trino
+    dengcode_adapter_iceberg_rest
 
 [importlinter:contract:core-sem-sdks]
 name = core não importa SDKs de nuvem, de LLM nem engines de dados
@@ -82,6 +86,8 @@ source_modules =
     dengcode_adapter_memory_sqlite
     dengcode_adapter_embedding_local
     dengcode_adapter_airflow
+    dengcode_adapter_trino
+    dengcode_adapter_iceberg_rest
 forbidden_modules =
     dengcode_engine
     dengcode_cli
@@ -114,6 +120,8 @@ forbidden_modules =
     dengcode_adapter_memory_sqlite
     dengcode_adapter_embedding_local
     dengcode_adapter_airflow
+    dengcode_adapter_trino
+    dengcode_adapter_iceberg_rest
 
 [importlinter:contract:adapters-independentes]
 name = adapters não importam uns aos outros
@@ -131,3 +139,5 @@ modules =
     dengcode_adapter_memory_sqlite
     dengcode_adapter_embedding_local
     dengcode_adapter_airflow
+    dengcode_adapter_trino
+    dengcode_adapter_iceberg_rest

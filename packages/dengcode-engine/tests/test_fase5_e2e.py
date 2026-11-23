@@ -29,8 +29,9 @@ memory: { adapter: sqlite }
 
 
 class FakeOrchAdapter:
-    info: ClassVar[AdapterInfo] = AdapterInfo(name="fake_orch", port=PortKind.ORCHESTRATOR,
-                                              version="0")
+    info: ClassVar[AdapterInfo] = AdapterInfo(
+        name="fake_orch", port=PortKind.ORCHESTRATOR, version="0"
+    )
 
     @classmethod
     def from_config(cls, cfg: dict[str, Any], ctx: AdapterContext) -> FakeOrchestrator:
@@ -38,11 +39,13 @@ class FakeOrchAdapter:
 
 
 def _registry() -> AdapterRegistry:
-    return AdapterRegistry([
-        *AdapterRegistry.discover().all(),
-        RegisteredAdapter("fake", None, FakeLLMAdapter.info, FakeLLMAdapter),
-        RegisteredAdapter("fake_orch", None, FakeOrchAdapter.info, FakeOrchAdapter),
-    ])
+    return AdapterRegistry(
+        [
+            *AdapterRegistry.discover().all(),
+            RegisteredAdapter("fake", None, FakeLLMAdapter.info, FakeLLMAdapter),
+            RegisteredAdapter("fake_orch", None, FakeOrchAdapter.info, FakeOrchAdapter),
+        ]
+    )
 
 
 @pytest.fixture
@@ -58,8 +61,12 @@ async def _approve(req: ApprovalRequested) -> ApprovalAnswer:
 
 
 async def _rt(project: Path, home: Path, workspace: str, script: list[FakeTurn]) -> Runtime:
-    rt = await build_runtime(RuntimeOptions(project_dir=project, stack="t", workspace=workspace),
-                             registry=_registry(), approver=_approve, home=home)
+    rt = await build_runtime(
+        RuntimeOptions(project_dir=project, stack="t", workspace=workspace),
+        registry=_registry(),
+        approver=_approve,
+        home=home,
+    )
     llm = rt.agent.llm
     assert isinstance(llm, FakeLLM)
     llm.script = script
@@ -83,16 +90,25 @@ INCIDENT_BODY = (
 
 async def test_why_did_the_dag_fail_and_remember(project: Path, tmp_path: Path) -> None:
     home = tmp_path / "home"
-    first = await _rt(project, home, "trabalho", [
-        call("memory_search", query="carga_pedidos falhou validar_pedidos", kinds=["incident"]),
-        call("pipeline_runs", pipeline_id="carga_pedidos"),
-        call("pipeline_run_detail", run_id="carga_pedidos/r1"),
-        call("pipeline_task_logs", run_id="carga_pedidos/r1", task_id="validar_pedidos"),
-        call("memory_propose", kind="incident",
-             title="carga_pedidos falhou: id_cliente nulo na validação", body=INCIDENT_BODY,
-             entities=["carga_pedidos", "pedidos.id_cliente"]),
-        text("A DAG falhou porque 12 pedidos chegaram sem id_cliente."),
-    ])
+    first = await _rt(
+        project,
+        home,
+        "trabalho",
+        [
+            call("memory_search", query="carga_pedidos falhou validar_pedidos", kinds=["incident"]),
+            call("pipeline_runs", pipeline_id="carga_pedidos"),
+            call("pipeline_run_detail", run_id="carga_pedidos/r1"),
+            call("pipeline_task_logs", run_id="carga_pedidos/r1", task_id="validar_pedidos"),
+            call(
+                "memory_propose",
+                kind="incident",
+                title="carga_pedidos falhou: id_cliente nulo na validação",
+                body=INCIDENT_BODY,
+                entities=["carga_pedidos", "pedidos.id_cliente"],
+            ),
+            text("A DAG falhou porque 12 pedidos chegaram sem id_cliente."),
+        ],
+    )
     assert "Investigação de falhas" in first.agent.system_prompt
     await first.agent.run("Por que a DAG carga_pedidos falhou ontem?")
     searched, runs, detail, logs, proposed = _results(first)
@@ -104,10 +120,15 @@ async def test_why_did_the_dag_fail_and_remember(project: Path, tmp_path: Path) 
     assert "confirmado pelo usuário" in proposed.content
 
     # segunda sessão, mesmo workspace: o incidente está no prompt e na busca
-    second = await _rt(project, home, "trabalho", [
-        call("memory_search", query="carga_pedidos falhou", kinds=["incident"]),
-        text("Já aconteceu antes: mesmo incidente."),
-    ])
+    second = await _rt(
+        project,
+        home,
+        "trabalho",
+        [
+            call("memory_search", query="carga_pedidos falhou", kinds=["incident"]),
+            text("Já aconteceu antes: mesmo incidente."),
+        ],
+    )
     assert "carga_pedidos falhou: id_cliente nulo" in second.agent.system_prompt
     await second.agent.run("Por que a DAG carga_pedidos falhou ontem?")
     [found] = _results(second)
@@ -117,21 +138,35 @@ async def test_why_did_the_dag_fail_and_remember(project: Path, tmp_path: Path) 
 
 async def test_workspaces_never_see_each_other(project: Path, tmp_path: Path) -> None:
     home = tmp_path / "home"
-    a = await _rt(project, home, "cliente-a", [
-        call("memory_propose", kind="glossary", title="receita líquida",
-             body="Receita sem impostos e devoluções, no grão do pedido.",
-             entities=["gold.vendas"]),
-        call("memory_search", query="receita líquida"),
-        text("ok"),
-    ])
+    a = await _rt(
+        project,
+        home,
+        "cliente-a",
+        [
+            call(
+                "memory_propose",
+                kind="glossary",
+                title="receita líquida",
+                body="Receita sem impostos e devoluções, no grão do pedido.",
+                entities=["gold.vendas"],
+            ),
+            call("memory_search", query="receita líquida"),
+            text("ok"),
+        ],
+    )
     await a.agent.run("guarde o termo")
     assert "receita líquida" in _results(a)[1].content
 
-    b = await _rt(project, home, "cliente-b", [
-        call("memory_search", query="receita líquida"),
-        call("memory_search", query="receita"),
-        text("ok"),
-    ])
+    b = await _rt(
+        project,
+        home,
+        "cliente-b",
+        [
+            call("memory_search", query="receita líquida"),
+            call("memory_search", query="receita"),
+            text("ok"),
+        ],
+    )
     assert "receita líquida" not in b.agent.system_prompt
     await b.agent.run("procure o termo")
     for res in _results(b):

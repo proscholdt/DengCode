@@ -1,14 +1,15 @@
 # Preset open source — roda inteiro local com Docker (`make up-oss`), inclusive o LLM (Ollama).
-# Fase 3: MinIO + DuckDB + Postgres. Trino, Iceberg REST, Airflow, Kafka e dbt entram nas
-# fases 4 e 5. Credenciais de desenvolvimento vêm do .env (veja .env.example).
+# MinIO + DuckDB/Trino/Postgres + Iceberg REST + Airflow + Kafka + dbt-core + memória SQLite.
+# Credenciais de desenvolvimento vêm do .env (veja .env.example) — nunca no YAML.
 name: opensource
-description: MinIO + DuckDB + Postgres + Ollama (Docker local)
+description: MinIO + DuckDB/Trino/Postgres + Iceberg REST + Airflow + Kafka + dbt-core + Ollama
 
 llm:
   provider: ollama
   models:
     main: "qwen2.5:7b"
     fast: "qwen2.5:3b"
+embedding: { provider: local }   # fastembed multilíngue (baixa o modelo na 1ª vez)
 
 storage:
   adapter: minio
@@ -16,18 +17,27 @@ storage:
   bucket: dengcode-exemplo
   access_key: "env://DENGCODE_MINIO_ACCESS_KEY"
   secret_key: "env://DENGCODE_MINIO_SECRET_KEY"
-table_format: parquet
+table_format: iceberg
 compute:
   - { adapter: duckdb, database: ".dengcode/oss.duckdb" }
+  - { adapter: trino, host: localhost, port: 8080, catalog: iceberg, schema: default }
   - adapter: postgres
     host: localhost
     port: 5432
     dbname: dengcode
     user: "env://DENGCODE_PG_USER"
     password: "env://DENGCODE_PG_PASSWORD"
-catalog: { adapter: duckdb }
+orchestrator:
+  adapter: airflow
+  url: "http://localhost:8081"
+  username: "env://DENGCODE_AIRFLOW_USER"
+  password: "env://DENGCODE_AIRFLOW_PASSWORD"
+catalog: { adapter: iceberg_rest, url: "http://localhost:8181", catalog_name: iceberg }
+transform: { adapter: dbt_core, project_dir: "dbt", target: dev }
+streaming: { adapter: kafka, bootstrap_servers: "localhost:9092" }
+stream_compute: []
 secrets: null
-memory:  { adapter: sqlite }
+memory: { adapter: sqlite }
 
 environments:
   dev:

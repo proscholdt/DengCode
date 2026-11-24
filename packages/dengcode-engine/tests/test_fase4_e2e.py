@@ -17,7 +17,7 @@ from dengcode_core.agent.loop import ApprovalAnswer
 from dengcode_core.events import ApprovalRequested
 from dengcode_engine.registry import AdapterRegistry, RegisteredAdapter
 from dengcode_engine.runtime import RuntimeOptions, build_runtime
-from dengcode_testkit.fake_llm import FakeLLM, FakeLLMAdapter, call, text
+from dengcode_testkit.fake_llm import FakeLLM, FakeLLMAdapter, FakeTurn, call, text
 
 pytestmark = pytest.mark.integration
 
@@ -25,6 +25,70 @@ EXAMPLE = Path(__file__).resolve().parents[3] / "examples" / "ecommerce"
 SILVER = Path("dbt/models/silver/silver_pedidos.sql")
 GOLD = Path("dbt/models/gold/gold_vendas_diarias.sql")
 GOLD_SCHEMA = Path("dbt/models/gold/schema.yml")
+
+
+OLD_SILVER = "        lower(trim(status)) as status,\n"
+NEW_SILVER = OLD_SILVER + "        lower(trim(canal)) as canal_venda,\n"
+OLD_GOLD_SEL = "    data_pedido,\n    count(*)"
+OLD_GOLD_GRP = "group by data_pedido"
+
+
+def phase4_script(snap: str) -> list[FakeTurn]:
+    """Roteiro do FakeLLM para o fluxo da fase 4 (reusado pelo teste via ACP)."""
+    return [
+        call("transform_list_models"),
+        call("impact_analysis", target="silver_pedidos.canal_venda"),
+        call("data_snapshot", table="main.silver_pedidos"),
+        call("data_snapshot", table="main.gold_vendas_diarias"),
+        call("file_edit", path=SILVER.as_posix(), old_text=OLD_SILVER, new_text=NEW_SILVER),
+        call(
+            "file_edit",
+            path=GOLD.as_posix(),
+            old_text=OLD_GOLD_SEL,
+            new_text="    data_pedido,\n    canal_venda,\n    count(*)",
+        ),
+        call(
+            "file_edit",
+            path=GOLD.as_posix(),
+            old_text=OLD_GOLD_GRP,
+            new_text="group by data_pedido, canal_venda",
+        ),
+        # o grão mudou para (data, canal): o teste de unicidade acompanha
+        call(
+            "file_edit",
+            path=GOLD_SCHEMA.as_posix(),
+            old_text="          - not_null\n          - unique\n",
+            new_text="          - not_null\n",
+        ),
+        call(
+            "file_edit",
+            path=GOLD_SCHEMA.as_posix(),
+            old_text="    columns:\n      - name: data_pedido\n",
+            new_text=(
+                "    data_tests:\n      - unique:\n          column_name: "
+                "\"cast(data_pedido as varchar) || '|' || canal_venda\"\n"
+                "    columns:\n      - name: canal_venda\n"
+                "        description: Canal da venda (site, app, loja, marketplace).\n"
+                "      - name: data_pedido\n"
+            ),
+        ),
+        call("transform_compile", model="gold_vendas_diarias"),
+        call("transform_run", selector="silver_pedidos+"),
+        call("transform_test", selector="silver_pedidos+"),
+        call(
+            "data_diff",
+            before=f"{snap}.silver_pedidos_antes",
+            after="main.silver_pedidos",
+            key=["id_pedido"],
+        ),
+        call(
+            "data_diff",
+            before=f"{snap}.gold_vendas_diarias_antes",
+            after="main.gold_vendas_diarias",
+            key=["data_pedido"],
+        ),
+        text("Relatório: canal_venda adicionado e propagado."),
+    ]
 
 
 @pytest.fixture
@@ -72,71 +136,14 @@ async def test_add_column_and_propagate(project: Path, tmp_path: Path) -> None:
 
     silver = (project / SILVER).read_text(encoding="utf-8")
     gold = (project / GOLD).read_text(encoding="utf-8")
-    old_silver = "        lower(trim(status)) as status,\n"
-    new_silver = old_silver + "        lower(trim(canal)) as canal_venda,\n"
-    assert old_silver in silver
-    old_gold_sel = "    data_pedido,\n    count(*)"
-    old_gold_grp = "group by data_pedido"
-    assert old_gold_sel in gold
-    assert old_gold_grp in gold
+    assert OLD_SILVER in silver
+    assert OLD_GOLD_SEL in gold
+    assert OLD_GOLD_GRP in gold
     snap = f"dengcode_tmp_{rt.agent.session.id}"
 
     llm = rt.agent.llm
     assert isinstance(llm, FakeLLM)
-    llm.script = [
-        call("transform_list_models"),
-        call("impact_analysis", target="silver_pedidos.canal_venda"),
-        call("data_snapshot", table="main.silver_pedidos"),
-        call("data_snapshot", table="main.gold_vendas_diarias"),
-        call("file_edit", path=SILVER.as_posix(), old_text=old_silver, new_text=new_silver),
-        call(
-            "file_edit",
-            path=GOLD.as_posix(),
-            old_text=old_gold_sel,
-            new_text="    data_pedido,\n    canal_venda,\n    count(*)",
-        ),
-        call(
-            "file_edit",
-            path=GOLD.as_posix(),
-            old_text=old_gold_grp,
-            new_text="group by data_pedido, canal_venda",
-        ),
-        # o grão mudou para (data, canal): o teste de unicidade acompanha
-        call(
-            "file_edit",
-            path=GOLD_SCHEMA.as_posix(),
-            old_text="          - not_null\n          - unique\n",
-            new_text="          - not_null\n",
-        ),
-        call(
-            "file_edit",
-            path=GOLD_SCHEMA.as_posix(),
-            old_text="    columns:\n      - name: data_pedido\n",
-            new_text=(
-                "    data_tests:\n      - unique:\n          column_name: "
-                "\"cast(data_pedido as varchar) || '|' || canal_venda\"\n"
-                "    columns:\n      - name: canal_venda\n"
-                "        description: Canal da venda (site, app, loja, marketplace).\n"
-                "      - name: data_pedido\n"
-            ),
-        ),
-        call("transform_compile", model="gold_vendas_diarias"),
-        call("transform_run", selector="silver_pedidos+"),
-        call("transform_test", selector="silver_pedidos+"),
-        call(
-            "data_diff",
-            before=f"{snap}.silver_pedidos_antes",
-            after="main.silver_pedidos",
-            key=["id_pedido"],
-        ),
-        call(
-            "data_diff",
-            before=f"{snap}.gold_vendas_diarias_antes",
-            after="main.gold_vendas_diarias",
-            key=["data_pedido"],
-        ),
-        text("Relatório: canal_venda adicionado e propagado."),
-    ]
+    llm.script = phase4_script(snap)
     result = await rt.agent.run(
         "adicione a coluna canal_venda em silver_pedidos e propague até gold_vendas_diarias"
     )

@@ -382,6 +382,90 @@ def _slash(cmd: str, rt: Runtime, renderer: ChatRenderer) -> bool:
     return True
 
 
+async def _acp_chat(opts: RuntimeOptions, renderer: ChatRenderer) -> None:
+    """``chat --acp``: a CLI é cliente ACP de um ``dengcode acp`` em subprocesso."""
+    from dengcode_cli.acp_client import AcpChatClient, server_command
+    from dengcode_core.checkpoints import CheckpointStore
+    from dengcode_engine.acp.jsonrpc import JsonRpcError
+
+    client = AcpChatClient(
+        renderer,
+        InteractiveApprover(console),
+        notice=lambda msg: console.print(f"[yellow]⚠ {msg}[/yellow]"),
+    )
+    cmd = server_command(
+        stack=opts.stack,
+        env=opts.env,
+        project=opts.project_dir,
+        mode=opts.mode,
+        llm=opts.llm,
+        workspace=opts.workspace,
+    )
+    try:
+        await client.start(cmd, cwd=opts.project_dir)
+        meta = await client.open(opts.project_dir, opts.session_id)
+    except (JsonRpcError, OSError) as exc:
+        await client.close()
+        raise _fail(exc) from exc
+    me = asyncio.current_task()
+    console.print(
+        f"[bold]DengCode[/bold] (ACP) · stack [cyan]{meta.get('stack')}[/cyan] · "
+        f"modelo [cyan]{meta.get('model')}[/cyan] · modo [cyan]{meta.get('mode')}[/cyan]\n"
+        "[dim]/ajuda para comandos · Ctrl+C cancela o turno[/dim]"
+    )
+    try:
+        while True:
+            try:
+                line = await asyncio.to_thread(console.input, "\n[bold green]você ›[/bold green] ")
+            except (EOFError, KeyboardInterrupt):
+                break
+            except asyncio.CancelledError:
+                if me is not None:
+                    me.uncancel()
+                console.print("\n[dim](use /sair para sair)[/dim]")
+                continue
+            text = line.strip()
+            if not text:
+                continue
+            if text.startswith("/"):
+                name = text.split()[0].lower()
+                if name in ("/sair", "/exit", "/quit"):
+                    break
+                if name == "/undo":
+                    store = CheckpointStore.for_session(opts.project_dir, client.session_id or "")
+                    restored = store.undo()
+                    console.print(
+                        f"[green]✓ desfeito: {restored.path}[/green]"
+                        if restored
+                        else "nada para desfazer"
+                    )
+                elif name == "/stack":
+                    console.print(
+                        f"stack {meta.get('stack')} · ambiente {meta.get('env')} · "
+                        f"LLM {meta.get('llm')} ({meta.get('model')}) · via ACP"
+                    )
+                elif name == "/cost":
+                    console.print(renderer.cost_line())
+                else:
+                    console.print(
+                        "/undo desfaz a última escrita · /stack mostra a stack · "
+                        "/cost mostra tokens e custo · /sair encerra"
+                    )
+                continue
+            turn = asyncio.create_task(client.prompt(text))
+            try:
+                await asyncio.shield(turn)
+            except asyncio.CancelledError:
+                if me is not None:
+                    me.uncancel()
+                await client.cancel()
+                await turn
+                console.print("\n[yellow]turno cancelado[/yellow]")
+    finally:
+        await client.close()
+    console.print(f"[dim]sessão {client.session_id} salva · {renderer.cost_line()}[/dim]")
+
+
 @app.command("chat")
 def chat(
     stack: str = StackOpt,
@@ -391,10 +475,16 @@ def chat(
     workspace: str | None = WsOpt,
     project: Path = DirOpt,
     resume: str | None = typer.Option(None, "--resume", help="Retoma uma sessão pelo id."),
+    acp: bool = typer.Option(
+        False, "--acp", help="Roda o motor como subprocesso ACP (o mesmo caminho das IDEs)."
+    ),
 ) -> None:
     """Conversa interativa com o agente."""
     renderer = ChatRenderer(console)
     opts = _options(project, stack, env, mode, llm, workspace, resume)
+    if acp:
+        asyncio.run(_acp_chat(opts, renderer))
+        return
 
     async def main() -> None:
         try:
@@ -405,6 +495,39 @@ def chat(
         await _chat_loop(rt, renderer)
 
     asyncio.run(main())
+
+
+@app.command("acp")
+def acp_server(
+    stack: str = typer.Option(
+        "local", "--stack", "-s", envvar="DENGCODE_STACK", help="Stack padrão das sessões."
+    ),
+    env: str = typer.Option(
+        "dev", "--env", "-e", envvar="DENGCODE_ENV", help="Ambiente padrão das sessões."
+    ),
+    mode: str | None = typer.Option(
+        None,
+        "--mode",
+        "-m",
+        envvar="DENGCODE_MODE",
+        help="Modo de permissão: ask, auto, read_only.",
+    ),
+    llm: str | None = typer.Option(
+        None, "--llm", envvar="DENGCODE_LLM", help="Troca o LLM: provedor ou provedor:modelo."
+    ),
+    workspace: str | None = typer.Option(
+        None, "--workspace", "-w", envvar="DENGCODE_WORKSPACE", help="Workspace das sessões."
+    ),
+    project: Path = DirOpt,
+) -> None:
+    """Servidor ACP em stdio (Zed, JetBrains, VS Code). O stdout é só do protocolo."""
+    from dengcode_engine.acp.server import AcpDefaults, AcpServer, serve_stdio
+
+    project = project.resolve()
+    load_dotenv(project)
+    defaults = AcpDefaults(stack=stack, env=env, workspace=workspace, mode=mode, llm=llm)
+    server = AcpServer(defaults=defaults, project_dir=project)
+    asyncio.run(serve_stdio(server))
 
 
 @app.command("run")

@@ -77,3 +77,35 @@ Requisições cliente → agente:
 O `session/request_permission` padrão continua sendo a única forma de aprovar;
 o card de SQL é só apresentação. Opções de permissão: `allow_once`,
 `allow_always` (= "sempre nesta sessão") e `reject_once`.
+
+## Implementação (fase 6)
+
+Versão do protocolo, decisões e limites: ADR 0009. Código em
+`packages/dengcode-engine/src/dengcode_engine/acp/` (`server.py`, `mapping.py`,
+`jsonrpc.py`, `stdio.py`); comando `dengcode acp`; cliente de teste em
+`dengcode_testkit.acp_client`.
+
+Metadados extras (sempre em `_meta.dengcode`, nunca na raiz de tipos do ACP —
+clientes genéricos ignoram):
+
+| Mensagem | `_meta.dengcode` |
+| --- | --- |
+| resposta de `session/new` e `session/load` | `{stack, env, workspace, model, llm, mode}` |
+| resposta de `session/prompt` | `{reason, detail, steps}` (motivo interno: `end`, `max_steps`, `budget`, `max_tokens`, `cancelled`) |
+| `session/request_permission` | `{name, risk, reason, preview, previewKind, details, arguments}` |
+| `session/update` `usage_update` | `{inputTokens, outputTokens, totalInputTokens, totalOutputTokens, costUsd}` |
+
+Tool calls: `tool_call` (status `pending` quando pede aprovação, `in_progress`
+quando executa direto) → `tool_call_update` (`in_progress` → `completed`/`failed`).
+Campos: `title` legível, `kind` (`read`, `edit`, `search`, `execute`, `other`),
+`name` (nome da ferramenta do DengCode), `rawInput`, `locations` (arquivos),
+`content` (diff do arquivo inteiro em edições + texto do resultado já
+mascarado) e `rawOutput` (metadados da ferramenta). Chamada bloqueada pela
+política aparece direto como `tool_call` com `status: failed`. O
+`_dengcode/dataPreview` chega depois do `tool_call_update` final de
+`query_run`/`storage_sample`; `totalRows` cai para o número de linhas da prévia
+quando o motor não informa o total.
+
+Erros: método desconhecido `-32601`; sessão desconhecida/sessão salva
+inexistente `-32002`; parâmetros inválidos `-32602`; falha do turno ou de
+configuração `-32603` (`data.reason = "error"` no prompt).

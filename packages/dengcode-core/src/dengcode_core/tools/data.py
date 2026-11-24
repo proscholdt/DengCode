@@ -14,7 +14,7 @@ from typing import Any, ClassVar
 from pydantic import BaseModel, Field
 
 from dengcode_core.audit import AuditLog, AuditRecord
-from dengcode_core.data.results import ResultStore, render_for_llm
+from dengcode_core.data.results import ResultStore, preview_payload, render_for_llm
 from dengcode_core.errors import ConfigError, DengCodeError, UnsupportedOperation
 from dengcode_core.memory_records import table_record
 from dengcode_core.ports.catalog import CatalogPort
@@ -206,20 +206,26 @@ class QueryRun(Tool[QueryRunArgs]):
                 f"ok: {analysis.kind.value.upper()} executado em {result.elapsed_ms} ms",
                 metadata={"sql": sql},
             )
+        pii = await self._pii_columns(analysis)
         text = render_for_llm(
             result.preview,
             total_rows=result.total_rows,
             path=path,
             masker=self.s.masker,
-            pii_columns=await self._pii_columns(analysis),
+            pii_columns=pii,
             note=note,
         )
+        # a prévia estruturada (já mascarada) é para as interfaces; o LLM recebe o texto
+        columns, rows = preview_payload(result.preview, masker=self.s.masker, pii_columns=pii)
         return ToolResult(
             text,
             metadata={
                 "sql": sql,
                 "rows": result.preview.num_rows,
+                "total_rows": result.total_rows,
                 "result_path": str(path) if path else None,
+                "columns": columns,
+                "preview": rows,
             },
         )
 
@@ -425,7 +431,17 @@ class StorageSample(Tool[StorageSampleArgs]):
             preview_rows=args.rows,
             note=f"amostra das primeiras {table.num_rows} linhas",
         )
-        return ToolResult(text)
+        columns, rows = preview_payload(table, masker=self.masker, rows=args.rows)
+        return ToolResult(
+            text,
+            metadata={
+                "rows": table.num_rows,
+                "total_rows": None,
+                "result_path": None,
+                "columns": columns,
+                "preview": rows,
+            },
+        )
 
 
 class StorageSchemaArgs(BaseModel):

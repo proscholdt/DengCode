@@ -11,6 +11,7 @@ from typing import Any
 from dengcode_core.errors import DengCodeError
 from dengcode_core.llm.messages import ChatRequest, Message
 from dengcode_core.ports.models import AdapterContext, PortKind
+from dengcode_engine.config.credentials import resolve_value
 from dengcode_engine.config.schema import AdapterRef, StackConfig
 from dengcode_engine.paths import workspace_dir
 from dengcode_engine.registry import AdapterRegistry
@@ -106,6 +107,22 @@ async def run_doctor(
             return f"{len(schemas)} schema(s)"
 
         checks.append(await _probe("catalog", catalog_ref.adapter, catalog_probe))
+
+    if stack.embedding is not None:
+        emb_cfg = stack.embedding
+
+        async def embedding_probe() -> str:
+            # embeddings locais baixam o modelo na 1ª vez: melhor aqui do que no meio do chat
+            cfg = {
+                k: v
+                for k, v in {"model": emb_cfg.model, **(emb_cfg.model_extra or {})}.items()
+                if v
+            }
+            emb = registry.create(PortKind.EMBEDDING, emb_cfg.provider, resolve_value(cfg), ctx)
+            [vec] = await emb.embed(["ping"])
+            return f"{len(vec)} dimensões"
+
+        checks.append(await _probe("embedding", emb_cfg.provider, embedding_probe))
 
     optional: list[tuple[str, PortKind, AdapterRef | None, Callable[[Any], Awaitable[str]]]] = [
         (

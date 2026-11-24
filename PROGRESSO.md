@@ -5,7 +5,7 @@
 
 ## Estado atual
 
-- Fase atual: **6 — ACP + extensão do VS Code**
+- Fase atual: **7 — Presets de nuvem** (aguardando contas de teste)
 - Última atualização: 2026-11-23
 
 ## Fases
@@ -15,7 +15,7 @@
 - [x] Fase 3 — Dados locais
 - [x] Fase 4 — Verificação e transformação
 - [x] Fase 5 — Memória, orquestração e streaming (preset open source completo)
-- [ ] Fase 6 — ACP + extensão do VS Code
+- [x] Fase 6 — ACP + extensão do VS Code (pendente: teste manual em JetBrains/Zed)
 - [ ] Fase 7 — Presets de nuvem (Azure → AWS → Google)
 - [ ] Fase 8 — Distribuição e lançamento
 
@@ -69,6 +69,11 @@
 | 5 | `build_runtime` passou a ser assíncrono (o resumo da memória vai no prompt congelado da sessão). |
 | 5 | Airflow 2 e 3 pela API REST (auto-detecção); `run_id` = `"<dag_id>/<dag_run_id>"`. Imagem `apache/airflow:slim-3.3.2` standalone. Kafka com `aiokafka`; `sample` não confirma offsets e nunca cria tópico. Trino pelo protocolo HTTP (`httpx2`) para cancelar de verdade; Iceberg REST direto pela especificação (sem `pyiceberg`). |
 | 5 | Compose: arquivo principal (Postgres + MinIO) inclui `docker/oss/{trino,airflow,kafka}.yaml`; portas Trino 8080, Airflow 8081, Iceberg 8181, Kafka 9092. |
+| 6 | ACP v1 (`protocolVersion: 1`, ADR 0009) com camada JSON-RPC própria (stdlib) — o SDK Python oficial traz modelo de agente próprio. Não usa `fs/*` nem `terminal/*` do cliente: as ferramentas do DengCode agem no disco. |
+| 6 | No Windows, `connect_read_pipe(stdin)` no laço Proactor nunca entrega dados: o stdin é lido por thread em todos os SOs; o stdout real é duplicado só para o protocolo e o fd 1 aponta para o stderr (um `print` perdido não corrompe o protocolo). |
+| 6 | Turno com erro volta como JSON-RPC `-32603` (`data.reason = "error"`); `max_steps`/`budget` → `max_turn_requests`. Metadados extras sempre em `_meta.dengcode`. |
+| 6 | Extensão VS Code com transporte JSON-RPC próprio; `@agentclientprotocol/sdk` só como tipos (devDependency) e num teste de interoperabilidade com um agente feito com o SDK oficial. Sem dependências em runtime; `.vsix` ~40 KB. |
+| 6 | O motor é localizado por: configuração → PATH → `uv run --project <repo> dengcode` → binário baixado dos GitHub Releases (`dengcode-<so>-<arq>`, a partir da fase 8). |
 | 1 | Ruff `N818` desligado: nomes de erro seguem a especificação (`CostLimitExceeded`, `UnsupportedOperation`). |
 | 1 | Adapter `local-fs` já implementa a `StoragePort` completa (CSV/Parquet/JSON via PyArrow); escrita desligada por padrão. |
 
@@ -76,6 +81,7 @@
 
 | Data | Fase/tarefa | O que foi feito | Pendências |
 | --- | --- | --- | --- |
+| 2026-11-23 | Fase 6 | Servidor ACP (`dengcode acp`): sessões new/load/prompt/cancel, mensagens em streaming, tool calls com diff, `session/request_permission`, plano, uso; extensões `_dengcode/sqlApproval`, `dataPreview`, `lineage`, `stack.*`, `workspace.*`. `dengcode chat --acp` (paridade testada com o modo em processo). Cliente ACP de teste no testkit; 26 testes de protocolo + o fluxo da fase 4 inteiro via ACP com dbt real. Extensão VS Code (`vscode-extension/`): chat em webview, diffs nativos com aceitar/rejeitar, card de SQL, grade de prévia, lineage, barra de status, CodeLens em `.sql`; 85 testes unitários + 10 de integração com `@vscode/test-electron` (motor fake) passando, inclusive contra o `.vsix` instalado; workflow `vscode.yml` empacota o `.vsix`. Guia `docs/guias/jetbrains-zed.md`. | (1) Testar manualmente em Zed/JetBrains (não há IDE aqui) e registrar. (2) O fluxo da fase 4 foi provado via ACP com o motor real e via VS Code com motor fake; falta um teste manual da extensão contra o motor real. |
 | 2026-11-23 | Fase 5 (ao vivo) | Com o Airflow real e o Ollama qwen2.5:7b: o agente listou execuções, leu o detalhe e os logs reais de `validar_pedidos`, achou a causa (12 nulos em `id_cliente` em 40 linhas) e propôs a correção. O `memory_propose` não terminou: na 1ª vez o embedding local baixa ~220 MB e a execução estourou o tempo limite do teste. Mitigação: `stack doctor` agora sonda o embedding (o download acontece ali, não no meio do chat). | Repetir a 2ª sessão ao vivo (citar o incidente) com o modelo já em cache. |
 | 2026-11-23 | Fase 5 | Workspaces (`workspace new/list/use`), `init` (PROJETO.md com tabelas protegidas na política), MemoryStore SQLite + embeddings (local/Ollama/OpenAI), `catalog sync` e detecção de `stale`, ferramentas `memory_*`, `pipeline_*`, `stream_*`; OrchestratorPort + Airflow; StreamPort + Kafka; StreamComputePort + fake; Trino (QueryEngine + Catalog) e Iceberg REST; compose completo e preset `opensource`; pacotes de conhecimento airflow, kafka, trino, iceberg e fundamento neutro de streaming. Critérios: `test_fase5_e2e.py` (investigação de `carga_pedidos` com logs mascarados, incidente gravado e citado na 2ª sessão; dois workspaces sem vazamento; sync + stale); contratos passam para todos os adapters open source (testes de integração com Docker); `stack doctor opensource` 9/9 verde com `make up-oss`. | — |
 | 2026-11-23 | Fase 4 | TransformPort + adapter `dbt_core` (contrato `TransformContract`, 11 testes com dbt real); lineage de colunas (testado em 6 dialetos) e `impact_analysis`; `DataDiff` (linhas a mais, duplicadas, nulos novos, alteradas); ferramentas `transform_*`, `data_snapshot`, `data_diff`, `knowledge_read`; fluxo "mudar modelo" no prompt; 9 fundamentos + pacotes duckdb/postgres/dbt; projeto dbt de exemplo. Critério: teste de ponta a ponta com dbt e DuckDB reais (`test_fase4_e2e.py`) — impacto lista o gold, edições aprovadas, `run`/`test` verdes, data diff mostra `canal_venda` nova, 300 → 300 linhas no silver e a mudança de grão no gold; o teste de unicidade antigo do gold falhou até ser ajustado ao novo grão (a verificação pegou o problema). | Rodar o cenário ao vivo com um LLM forte (o 7B local se perde em SQL do DuckDB). |

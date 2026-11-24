@@ -1,0 +1,10 @@
+# Só vão para o .vsix: o bundle, os estilos/ícones, package.json, README, CHANGELOG e LICENSE.
+**
+!dist/**/*.js
+!media/*.css
+!media/icon.png
+!media/dengcode.svg
+!package.json
+!README.md
+!CHANGELOG.md
+!LICENSE

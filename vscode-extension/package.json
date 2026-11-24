@@ -1,0 +1,275 @@
+{
+  "name": "dengcode",
+  "displayName": "DengCode",
+  "description": "Assistente de IA para engenharia de dados: chat, aprovação de SQL com custo, prévia de dados, diffs e lineage — cliente ACP do motor DengCode.",
+  "version": "0.1.0",
+  "publisher": "dengcode",
+  "license": "Apache-2.0",
+  "icon": "media/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/proscholdt/DengCode.git",
+    "directory": "vscode-extension"
+  },
+  "bugs": {
+    "url": "https://github.com/proscholdt/DengCode/issues"
+  },
+  "homepage": "https://github.com/proscholdt/DengCode#readme",
+  "engines": {
+    "vscode": "^1.140.0"
+  },
+  "categories": [
+    "AI",
+    "Chat",
+    "Data Science",
+    "Programming Languages"
+  ],
+  "keywords": [
+    "engenharia de dados",
+    "sql",
+    "dbt",
+    "lineage",
+    "acp",
+    "agente",
+    "data engineering"
+  ],
+  "main": "./dist/extension.js",
+  "activationEvents": [
+    "onLanguage:sql"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "dengcode",
+          "title": "DengCode",
+          "icon": "media/dengcode.svg"
+        }
+      ]
+    },
+    "views": {
+      "dengcode": [
+        {
+          "type": "webview",
+          "id": "dengcode.chat",
+          "name": "Chat",
+          "icon": "media/dengcode.svg"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "dengcode.novaSessao",
+        "title": "Nova sessão",
+        "category": "DengCode",
+        "icon": "$(add)"
+      },
+      {
+        "command": "dengcode.executarSql",
+        "title": "Executar SQL com DengCode",
+        "category": "DengCode",
+        "icon": "$(play)"
+      },
+      {
+        "command": "dengcode.explicarSql",
+        "title": "Explicar SQL",
+        "category": "DengCode"
+      },
+      {
+        "command": "dengcode.trocarStack",
+        "title": "Trocar stack/ambiente",
+        "category": "DengCode"
+      },
+      {
+        "command": "dengcode.trocarWorkspace",
+        "title": "Trocar workspace",
+        "category": "DengCode"
+      },
+      {
+        "command": "dengcode.mostrarLineage",
+        "title": "Mostrar lineage",
+        "category": "DengCode",
+        "icon": "$(type-hierarchy)"
+      },
+      {
+        "command": "dengcode.cancelar",
+        "title": "Cancelar turno",
+        "category": "DengCode",
+        "icon": "$(debug-stop)"
+      },
+      {
+        "command": "dengcode.aceitarProposta",
+        "title": "Aceitar alteração proposta",
+        "category": "DengCode",
+        "icon": "$(check)"
+      },
+      {
+        "command": "dengcode.rejeitarProposta",
+        "title": "Rejeitar alteração proposta",
+        "category": "DengCode",
+        "icon": "$(close)"
+      },
+      {
+        "command": "dengcode.reiniciarMotor",
+        "title": "Reiniciar motor",
+        "category": "DengCode"
+      },
+      {
+        "command": "dengcode.baixarMotor",
+        "title": "Baixar motor",
+        "category": "DengCode"
+      },
+      {
+        "command": "dengcode.mostrarLog",
+        "title": "Mostrar log",
+        "category": "DengCode"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "dengcode.novaSessao",
+          "when": "view == dengcode.chat",
+          "group": "navigation@1"
+        },
+        {
+          "command": "dengcode.mostrarLineage",
+          "when": "view == dengcode.chat",
+          "group": "navigation@2"
+        },
+        {
+          "command": "dengcode.cancelar",
+          "when": "view == dengcode.chat",
+          "group": "navigation@3"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "dengcode.aceitarProposta",
+          "when": "resourceScheme == dengcode-proposta",
+          "group": "navigation@1"
+        },
+        {
+          "command": "dengcode.rejeitarProposta",
+          "when": "resourceScheme == dengcode-proposta",
+          "group": "navigation@2"
+        },
+        {
+          "command": "dengcode.executarSql",
+          "when": "resourceLangId == sql",
+          "group": "navigation@5"
+        }
+      ],
+      "editor/context": [
+        {
+          "command": "dengcode.executarSql",
+          "when": "resourceLangId == sql",
+          "group": "dengcode@1"
+        },
+        {
+          "command": "dengcode.explicarSql",
+          "when": "resourceLangId == sql",
+          "group": "dengcode@2"
+        },
+        {
+          "command": "dengcode.mostrarLineage",
+          "when": "resourceLangId == sql",
+          "group": "dengcode@3"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "dengcode.aceitarProposta",
+          "when": "resourceScheme == dengcode-proposta"
+        },
+        {
+          "command": "dengcode.rejeitarProposta",
+          "when": "resourceScheme == dengcode-proposta"
+        },
+        {
+          "command": "dengcode.executarSql",
+          "when": "editorLangId == sql"
+        },
+        {
+          "command": "dengcode.explicarSql",
+          "when": "editorLangId == sql"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "DengCode",
+      "properties": {
+        "dengcode.caminhoMotor": {
+          "type": "string",
+          "default": "",
+          "scope": "machine-overridable",
+          "markdownDescription": "Caminho do executável `dengcode`. Vazio = procurar no PATH, depois `uv run dengcode` (se a pasta aberta for o repositório do DengCode) e, por fim, o binário baixado pela extensão."
+        },
+        "dengcode.stackPadrao": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Stack usada nas sessões novas (ex.: `local`, `opensource`). Vazio = a stack ativa do motor."
+        },
+        "dengcode.ambiente": {
+          "type": "string",
+          "enum": [
+            "dev",
+            "prod"
+          ],
+          "enumDescriptions": [
+            "Desenvolvimento",
+            "Produção (escrita sempre exige aprovação e alguns comandos são bloqueados)"
+          ],
+          "default": "dev",
+          "description": "Ambiente da stack."
+        },
+        "dengcode.modoPermissao": {
+          "type": "string",
+          "enum": [
+            "ask",
+            "auto",
+            "read_only"
+          ],
+          "enumDescriptions": [
+            "Pergunta antes de escrever, editar ou rodar DDL/DML",
+            "Aprova automaticamente o que a política permitir (bloqueios continuam)",
+            "Só leitura: nada de escrita"
+          ],
+          "default": "ask",
+          "description": "Modo de permissão do agente."
+        },
+        "dengcode.workspace": {
+          "type": "string",
+          "default": "",
+          "description": "Workspace do DengCode (isola memória, sessões e auditoria). Vazio = o workspace ativo do motor."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "build:prod": "node esbuild.mjs --production",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc -p .",
+    "lint": "tsc -p .",
+    "test:unit": "node --import tsx --test \"test/unit/**/*.test.ts\"",
+    "build:test": "node esbuild.mjs --tests",
+    "test:integration": "npm run build && npm run build:test && node out/test/integration/runTest.js",
+    "test": "npm run test:unit",
+    "vscode:prepublish": "npm run build:prod",
+    "package": "vsce package --no-dependencies"
+  },
+  "devDependencies": {
+    "@agentclientprotocol/sdk": "2.9.1",
+    "@types/mocha": "10.0.10",
+    "@types/node": "22.20.5",
+    "@types/vscode": "1.140.0",
+    "@vscode/test-electron": "3.1.0",
+    "@vscode/vsce": "4.1.1",
+    "esbuild": "0.28.2",
+    "mocha": "12.0.3",
+    "tsx": "4.23.15",
+    "typescript": "7.0.2",
+    "zod": "4.6.7"
+  }
+}

@@ -1,0 +1,84 @@
+name: Extensão VS Code
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "vscode-extension/**"
+      - ".github/workflows/vscode.yml"
+  pull_request:
+    paths:
+      - "vscode-extension/**"
+      - ".github/workflows/vscode.yml"
+
+concurrency:
+  group: vscode-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: vscode-extension
+
+jobs:
+  check:
+    name: lint + unitários · ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: vscode-extension/package-lock.json
+      - name: npm ci
+        run: npm ci
+      - name: lint (tsc strict)
+        run: npm run lint
+      - name: testes unitários
+        run: npm run test:unit
+
+  package:
+    name: empacotar .vsix
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: vscode-extension/package-lock.json
+      - name: npm ci
+        run: npm ci
+      - name: vsce package
+        run: npm run package
+      - uses: actions/upload-artifact@v7
+        with:
+          name: dengcode-vsix
+          path: vscode-extension/*.vsix
+          if-no-files-found: error
+
+  integration:
+    name: integração (VS Code + motor fake) · ubuntu
+    runs-on: ubuntu-latest
+    needs: check
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: vscode-extension/package-lock.json
+      - name: npm ci
+        run: npm ci
+      - name: cache do VS Code de teste
+        uses: actions/cache@v6
+        with:
+          path: vscode-extension/.vscode-test
+          key: vscode-test-${{ runner.os }}-${{ hashFiles('vscode-extension/package-lock.json') }}
+      - name: testes de integração (xvfb)
+        run: xvfb-run -a npm run test:integration

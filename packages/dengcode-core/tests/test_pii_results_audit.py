@@ -119,3 +119,29 @@ def test_audit_is_append_only_and_masks_sql(tmp_path: Path) -> None:
     with pytest.raises(sqlite3.DatabaseError, match="append-only"):
         conn.execute("UPDATE audit SET decision = 'x'")
     conn.close()
+
+
+def test_preview_payload_is_json_and_masked() -> None:
+    import json
+    from datetime import date
+    from decimal import Decimal
+
+    from dengcode_core.data.results import preview_payload
+
+    table = pa.table(
+        {
+            "id": list(range(30)),
+            "email": [f"cliente{i}@loja.com" for i in range(30)],
+            "valor": [Decimal("1.50")] * 30,
+            "dia": [date(2026, 1, 1)] * 30,
+            "nota": ["CPF 529.982.247-25"] * 30,
+        }
+    )
+    columns, rows = preview_payload(table, masker=PiiMasker(), pii_columns=["nota"])
+    assert columns[0] == {"name": "id", "type": "int64"}
+    assert len(rows) == 20  # nunca mais que a prévia padrão
+    assert rows[0]["id"] == 0
+    assert rows[0]["valor"] == "1.50"
+    assert rows[0]["dia"] == "2026-01-01"
+    assert "@loja.com" not in json.dumps(rows)
+    assert "529.982" not in json.dumps(rows)

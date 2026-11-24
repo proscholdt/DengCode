@@ -238,3 +238,23 @@ async def test_session_is_persisted(project: Path) -> None:
     await agent.run("olá")
     loaded = SessionStore(project / ".sessions").load(agent.session.id)
     assert [m.role for m in loaded.messages] == ["user", "assistant"]
+
+
+def test_jsonable_keeps_serializable_lists_and_dicts() -> None:
+    from dengcode_core.agent.loop import _jsonable  # pyright: ignore[reportPrivateUsage]
+
+    data = {
+        "sql": "select 1",
+        "rows": 2,
+        "preview": [{"a": 1, "b": None}],
+        "columns": [{"name": "a", "type": "int64"}],
+        "path": Path("x"),
+        "bad": [object()],
+        "nan": float("nan"),
+    }
+    assert _jsonable(data) == {
+        "sql": "select 1",
+        "rows": 2,
+        "preview": [{"a": 1, "b": None}],
+        "columns": [{"name": "a", "type": "int64"}],
+    }

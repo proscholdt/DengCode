@@ -9,6 +9,7 @@ usuário cancelar ou o orçamento acabar.
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
@@ -410,5 +411,15 @@ class Agent:
                 log.exception("não foi possível salvar a sessão %s", self.session.id)
 
 
+def _is_json(value: Any) -> bool:
+    try:
+        json.dumps(value, allow_nan=False)
+    except (TypeError, ValueError):
+        return False
+    return True
+
+
 def _jsonable(data: dict[str, Any]) -> dict[str, Any]:
-    return {k: v for k, v in data.items() if isinstance(v, str | int | float | bool | None)}
+    """Metadados que viajam no EventBus: escalares e listas/dicionários serializáveis."""
+    kinds = (str, int, float, bool, list, dict, type(None))
+    return {k: v for k, v in data.items() if isinstance(v, kinds) and _is_json(v)}

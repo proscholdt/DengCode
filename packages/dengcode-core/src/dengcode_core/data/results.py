@@ -7,6 +7,7 @@ Ao LLM: schema, contagem, até 20 linhas e estatísticas simples por coluna.
 
 from __future__ import annotations
 
+import math
 import uuid
 from collections.abc import Iterable
 from pathlib import Path
@@ -82,6 +83,34 @@ def column_stats(
             parts.append("PII: valores omitidos")
         out.append(f"- {field.name} ({field.type}): " + ", ".join(parts))
     return out
+
+
+def _json_cell(value: Any) -> Any:
+    """Valor de célula seguro para JSON (datas, decimais e binários viram texto)."""
+    if value is None or isinstance(value, bool | int | str):
+        return value
+    if isinstance(value, float):
+        return value if math.isfinite(value) else str(value)
+    if isinstance(value, bytes):
+        return f"<{len(value)} bytes>"
+    text = value.isoformat() if hasattr(value, "isoformat") else str(value)
+    return text if len(text) <= MAX_CELL * 4 else text[: MAX_CELL * 4 - 1] + "…"
+
+
+def preview_payload(
+    table: pa.Table,
+    *,
+    masker: PiiMasker,
+    pii_columns: Iterable[str] = (),
+    rows: int = PREVIEW_ROWS,
+) -> tuple[list[dict[str, str]], list[dict[str, Any]]]:
+    """Schema e prévia (até ``rows`` linhas, PII mascarada) em formato JSON, para as
+    interfaces mostrarem uma grade. Nunca devolve valores crus de colunas PII."""
+    masked = masker.table(table.slice(0, min(rows, PREVIEW_ROWS)), list(pii_columns))
+    columns = [{"name": f.name, "type": str(f.type)} for f in table.schema]
+    names = masked.column_names
+    data = [{n: _json_cell(row[n]) for n in names} for row in masked.to_pylist()]
+    return columns, data
 
 
 def render_for_llm(

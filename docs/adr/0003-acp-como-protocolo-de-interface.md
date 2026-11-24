@@ -1,6 +1,6 @@
 # ADR 0003 — ACP como protocolo entre motor e interfaces
 
-- Status: aceito (versão exata do protocolo a definir na fase 6)
+- Status: aceito (versão do protocolo definida no ADR 0009)
 - Data: 2026-11-23
 
 ## Contexto

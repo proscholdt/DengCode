@@ -1,0 +1,85 @@
+/* Painéis do DengCode (prévia de dados e lineage). */
+body.panel {
+  color: var(--vscode-foreground);
+  background: var(--vscode-editor-background);
+  font-family: var(--vscode-font-family);
+  font-size: var(--vscode-font-size);
+  padding: 8px 16px;
+}
+h2 {
+  font-weight: 600;
+  margin: 8px 0 4px;
+}
+code {
+  font-family: var(--vscode-editor-font-family);
+  background: var(--vscode-textCodeBlock-background);
+  padding: 0 3px;
+  border-radius: 3px;
+}
+.muted {
+  color: var(--vscode-descriptionForeground);
+}
+
+.grid-wrap {
+  overflow: auto;
+  max-height: calc(100vh - 120px);
+}
+table.grid {
+  border-collapse: collapse;
+  font-family: var(--vscode-editor-font-family);
+  font-size: var(--vscode-editor-font-size);
+}
+table.grid th,
+table.grid td {
+  border: 1px solid var(--vscode-panel-border, #8884);
+  padding: 3px 8px;
+  text-align: left;
+  white-space: nowrap;
+}
+table.grid th {
+  position: sticky;
+  top: 0;
+  background: var(--vscode-editorWidget-background);
+}
+table.grid tbody tr:nth-child(even) {
+  background: var(--vscode-list-hoverBackground);
+}
+table.grid .col-type {
+  display: block;
+  font-weight: normal;
+  font-size: 0.8em;
+  color: var(--vscode-descriptionForeground);
+}
+table.grid td.null {
+  color: var(--vscode-descriptionForeground);
+  font-style: italic;
+}
+
+.lineage-wrap {
+  overflow: auto;
+}
+svg.lineage .edge {
+  fill: none;
+  stroke: var(--vscode-descriptionForeground);
+  stroke-width: 1.5;
+}
+svg.lineage .arrow {
+  fill: var(--vscode-descriptionForeground);
+}
+svg.lineage .node rect {
+  fill: var(--vscode-editorWidget-background);
+  stroke: var(--vscode-panel-border, #888);
+  stroke-width: 1;
+}
+svg.lineage .node-column rect {
+  stroke-dasharray: 4 2;
+}
+svg.lineage .node-root rect {
+  stroke: var(--vscode-focusBorder);
+  stroke-width: 2;
+}
+svg.lineage text {
+  fill: var(--vscode-foreground);
+  font-family: var(--vscode-editor-font-family);
+  font-size: 12px;
+}

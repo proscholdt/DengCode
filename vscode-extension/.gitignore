@@ -1,0 +1,5 @@
+# Saídas de build e testes da extensão
+dist/
+out/
+.vscode-test/
+*.vsix
